@@ -3,165 +3,391 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Booking Analytics - RACE2616W</title>
+    <title>CU Lines Booking Analytics Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #333; line-height: 1.6; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+            background: #f5f7fa; 
+            color: #333; 
+            line-height: 1.6; 
+        }
         .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
-        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 40px; border-radius: 16px; margin-bottom: 30px; text-align: center; }
+        
+        /* Header */
+        .header { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            color: white; 
+            padding: 40px; 
+            border-radius: 16px; 
+            margin-bottom: 30px; 
+            text-align: center; 
+        }
         .header h1 { font-size: 2.5em; margin-bottom: 10px; }
         .header p { opacity: 0.9; font-size: 1.1em; }
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px; }
-        .stat-card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); text-align: center; transition: transform 0.2s; }
+        
+        /* Search Box */
+        .search-section {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .search-box {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .search-box input {
+            padding: 15px 25px;
+            font-size: 1.2em;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            width: 300px;
+            text-transform: uppercase;
+            transition: border-color 0.3s;
+        }
+        .search-box input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .search-box button {
+            padding: 15px 40px;
+            font-size: 1.2em;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .search-box button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        .search-box button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        /* Loading */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+        .loading.active { display: block; }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* Stats Grid */
+        .stats-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); 
+            gap: 20px; 
+            margin-bottom: 30px; 
+        }
+        .stat-card { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 12px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08); 
+            text-align: center; 
+            transition: transform 0.2s; 
+        }
         .stat-card:hover { transform: translateY(-5px); }
         .stat-card .icon { font-size: 3em; margin-bottom: 15px; }
         .stat-card .value { font-size: 2.5em; font-weight: bold; color: #667eea; margin-bottom: 5px; }
         .stat-card .label { color: #666; font-size: 1em; }
-        .chart-section { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); margin-bottom: 30px; }
-        .chart-section h2 { margin-bottom: 20px; color: #333; border-left: 4px solid #667eea; padding-left: 15px; }
+        
+        /* Charts */
+        .chart-section { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 12px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08); 
+            margin-bottom: 30px; 
+        }
+        .chart-section h2 { 
+            margin-bottom: 20px; 
+            color: #333; 
+            border-left: 4px solid #667eea; 
+            padding-left: 15px; 
+        }
         .chart-container { position: relative; height: 400px; }
-        .two-columns { display: grid; grid-template-columns: repeat(auto-fit, minmax(500px, 1fr)); gap: 30px; }
-        .table-section { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); margin-bottom: 30px; overflow-x: auto; }
-        .table-section h2 { margin-bottom: 20px; color: #333; border-left: 4px solid #667eea; padding-left: 15px; }
+        .two-columns { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr)); 
+            gap: 30px; 
+        }
+        
+        /* Table */
+        .table-section { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 12px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08); 
+            margin-bottom: 30px; 
+            overflow-x: auto; 
+        }
+        .table-section h2 { 
+            margin-bottom: 20px; 
+            color: #333; 
+            border-left: 4px solid #667eea; 
+            padding-left: 15px; 
+        }
         table { width: 100%; border-collapse: collapse; }
         th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #eee; }
         th { background: #f8f9fa; font-weight: 600; color: #555; }
         tr:hover { background: #f8f9fa; }
         .teu-highlight { color: #667eea; font-weight: bold; }
+        
+        /* Footer */
         .footer { text-align: center; padding: 30px; color: #666; font-size: 0.9em; }
-        @media (max-width: 768px) { .two-columns { grid-template-columns: 1fr; } }
+        
+        /* Hidden */
+        .hidden { display: none; }
+        
+        @media (max-width: 768px) { 
+            .two-columns { grid-template-columns: 1fr; }
+            .search-box input { width: 100%; }
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>Booking Analytics Report</h1>
-            <p>Vessel: <strong>RACE2616W</strong> | Generated: 2026-04-07 14:02:41</p>
+            <h1>CU Lines Booking Analytics</h1>
+            <p>Real-time vessel booking data visualization</p>
         </div>
         
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="icon">📦</div>
-                <div class="value">424</div>
-                <div class="label">Total Bookings</div>
+        <div class="search-section">
+            <div class="search-box">
+                <input type="text" id="vesselInput" placeholder="Enter Vessel (e.g. RACE2616W)" maxlength="20">
+                <button onclick="searchVessel()" id="searchBtn">Search</button>
             </div>
-            <div class="stat-card">
-                <div class="icon">🚢</div>
-                <div class="value">496</div>
-                <div class="label">20' Containers</div>
-            </div>
-            <div class="stat-card">
-                <div class="icon">🚢</div>
-                <div class="value">878</div>
-                <div class="label">40' Containers</div>
-            </div>
-            <div class="stat-card">
-                <div class="icon">📈</div>
-                <div class="value">2252</div>
-                <div class="label">Total TEU</div>
-            </div>
+            <p style="margin-top: 15px; color: #666; font-size: 0.9em;">
+                Enter vessel voyage code to query booking data from Allegro system
+            </p>
         </div>
         
-        <div class="two-columns">
-            <div class="chart-section">
-                <h2>Top 10 POL (Port of Loading)</h2>
-                <div class="chart-container">
-                    <canvas id="polChart"></canvas>
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Querying Allegro system...</p>
+            <p style="font-size: 0.9em; color: #666; margin-top: 10px;">This may take 30-60 seconds</p>
+        </div>
+        
+        <div id="results" class="hidden">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="icon">📦</div>
+                    <div class="value" id="totalBookings">-</div>
+                    <div class="label">Total Bookings</div>
+                </div>
+                <div class="stat-card">
+                    <div class="icon">🚢</div>
+                    <div class="value" id="teu20">-</div>
+                    <div class="label">20' Containers</div>
+                </div>
+                <div class="stat-card">
+                    <div class="icon">🚢</div>
+                    <div class="value" id="teu40">-</div>
+                    <div class="label">40' Containers</div>
+                </div>
+                <div class="stat-card">
+                    <div class="icon">📈</div>
+                    <div class="value" id="totalTeu">-</div>
+                    <div class="label">Total TEU</div>
                 </div>
             </div>
-            <div class="chart-section">
-                <h2>Top 10 POD (Port of Discharge)</h2>
-                <div class="chart-container">
-                    <canvas id="podChart"></canvas>
+            
+            <div class="two-columns">
+                <div class="chart-section">
+                    <h2>Top 10 POL (Port of Loading)</h2>
+                    <div class="chart-container">
+                        <canvas id="polChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-section">
+                    <h2>Top 10 POD (Port of Discharge)</h2>
+                    <div class="chart-container">
+                        <canvas id="podChart"></canvas>
+                    </div>
                 </div>
             </div>
-        </div>
-        
-        <div class="table-section">
-            <h2>Top 20 POL-POD Routes</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>POL</th>
-                        <th>POD</th>
-                        <th>20' TEU</th>
-                        <th>40' TEU</th>
-                        <th>Total TEU</th>
-                    </tr>
-                </thead>
-                <tbody>
-<tr><td>CNTAO</td><td>SAJED</td><td>14</td><td>196</td><td><strong>406</strong></td></tr>
-<tr><td>CNTAO</td><td>AEKLF</td><td>82</td><td>158</td><td><strong>398</strong></td></tr>
-<tr><td>CNXGG</td><td>SAJED</td><td>82</td><td>67</td><td><strong>216</strong></td></tr>
-<tr><td>CNTAO</td><td>MYPKG</td><td>39</td><td>57</td><td><strong>153</strong></td></tr>
-<tr><td>CNSHK</td><td>AEKLF</td><td>60</td><td>36</td><td><strong>132</strong></td></tr>
-<tr><td>CNXGG</td><td>AEKLF</td><td>76</td><td>22</td><td><strong>120</strong></td></tr>
-<tr><td>CNTAO</td><td>INMUN</td><td>0</td><td>59</td><td><strong>118</strong></td></tr>
-<tr><td>CNTAO</td><td>INNSA</td><td>23</td><td>43</td><td><strong>109</strong></td></tr>
-<tr><td>CNTAO</td><td>SDPZU</td><td>0</td><td>37</td><td><strong>74</strong></td></tr>
-<tr><td>CNTAO</td><td>PKKHI</td><td>17</td><td>23</td><td><strong>63</strong></td></tr>
-<tr><td>CNSHA</td><td>MYPKG</td><td>32</td><td>14</td><td><strong>60</strong></td></tr>
-<tr><td>CNXGG</td><td>INMUN</td><td>18</td><td>18</td><td><strong>54</strong></td></tr>
-<tr><td>CNSHA</td><td>DJJIB</td><td>0</td><td>25</td><td><strong>50</strong></td></tr>
-<tr><td>CNSHA</td><td>AEKLF</td><td>1</td><td>17</td><td><strong>35</strong></td></tr>
-<tr><td>VNHPH</td><td>AEKLF</td><td>2</td><td>11</td><td><strong>24</strong></td></tr>
-<tr><td>CNXGG</td><td>YEADE</td><td>1</td><td>11</td><td><strong>23</strong></td></tr>
-<tr><td>CNTAO</td><td>EGSOK</td><td>0</td><td>11</td><td><strong>22</strong></td></tr>
-<tr><td>CNXGG</td><td>JOAQJ</td><td>9</td><td>6</td><td><strong>21</strong></td></tr>
-<tr><td>CNXGG</td><td>OMSOH</td><td>13</td><td>4</td><td><strong>21</strong></td></tr>
-<tr><td>CNTAO</td><td>DJJIB</td><td>0</td><td>10</td><td><strong>20</strong></td></tr>
-
-                </tbody>
-            </table>
+            
+            <div class="table-section">
+                <h2>Top 20 POL-POD Routes</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>POL</th>
+                            <th>POD</th>
+                            <th>20' TEU</th>
+                            <th>40' TEU</th>
+                            <th>Total TEU</th>
+                        </tr>
+                    </thead>
+                    <tbody id="routesTable">
+                    </tbody>
+                </table>
+            </div>
         </div>
         
         <div class="footer">
-            <p>Generated by Allegro Booking Analytics System | CU Lines</p>
+            <p>CU Lines Booking Analytics System | Data source: Allegro</p>
         </div>
     </div>
     
     <script>
-        // POL Chart
-        new Chart(document.getElementById("polChart"), {
-            type: 'bar',
-            data: {
-                labels: ['CNTAO', 'CNXGG', 'CNSHA', 'CNSHK', 'VNHPH', 'CNNGB', 'CNNAS', 'TWKHH', 'CNQZH', 'TWTXG'],
-                datasets: [{
-                    label: 'TEU',
-                    data: [1363, 483, 167, 132, 26, 20, 15, 12, 10, 6],
-                    backgroundColor: 'rgba(102, 126, 234, 0.8)',
-                    borderColor: 'rgba(102, 126, 234, 1)',
-                    borderWidth: 1
-                }]
+        // Sample data for RACE2616W (replace with actual API call)
+        const sampleData = {
+            vessel: "RACE2616W",
+            totalBookings: 416,
+            teu20: 492,
+            teu40: 873,
+            totalTeu: 2238,
+            polData: {
+                labels: ['CNTAO', 'CNXGG', 'CNSHA', 'CNYTN', 'KRINC'],
+                data: [1363, 481, 155, 120, 89]
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: { y: { beginAtZero: true } }
-            }
-        });
+            podData: {
+                labels: ['AEKLF', 'SAJED', 'MYPKG', 'EGSOK', 'DJJIB'],
+                data: [747, 646, 205, 180, 120]
+            },
+            routes: [
+                {pol: 'CNTAO', pod: 'SAJED', teu20: 120, teu40: 143, total: 406},
+                {pol: 'CNTAO', pod: 'AEKLF', teu20: 98, teu40: 150, total: 398},
+                {pol: 'CNXGG', pod: 'SAJED', teu20: 65, teu40: 76, total: 216},
+                {pol: 'CNXGG', pod: 'AEKLF', teu20: 45, teu40: 68, total: 181},
+                {pol: 'CNSHA', pod: 'SAJED', teu20: 38, teu40: 42, total: 122}
+            ]
+        };
         
-        // POD Chart
-        new Chart(document.getElementById("podChart"), {
-            type: 'bar',
-            data: {
-                labels: ['AEKLF', 'SAJED', 'MYPKG', 'INMUN', 'INNSA', 'SDPZU', 'PKKHI', 'DJJIB', 'YEADE', 'EGSOK'],
-                datasets: [{
-                    label: 'TEU',
-                    data: [749, 646, 213, 180, 111, 100, 77, 71, 39, 24],
-                    backgroundColor: 'rgba(118, 75, 162, 0.8)',
-                    borderColor: 'rgba(118, 75, 162, 1)',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: { y: { beginAtZero: true } }
+        let polChart = null;
+        let podChart = null;
+        
+        function searchVessel() {
+            const vessel = document.getElementById('vesselInput').value.trim().toUpperCase();
+            if (!vessel) {
+                alert('Please enter a vessel code');
+                return;
             }
+            
+            // Show loading
+            document.getElementById('loading').classList.add('active');
+            document.getElementById('results').classList.add('hidden');
+            document.getElementById('searchBtn').disabled = true;
+            
+            // Simulate API call (replace with actual fetch)
+            setTimeout(() => {
+                displayResults(sampleData);
+                document.getElementById('loading').classList.remove('active');
+                document.getElementById('results').classList.remove('hidden');
+                document.getElementById('searchBtn').disabled = false;
+            }, 2000);
+            
+            // TODO: Replace with actual API call:
+            // fetch(`/api/query?vessel=${vessel}`)
+            //     .then(r => r.json())
+            //     .then(data => displayResults(data))
+            //     .catch(err => alert('Error: ' + err.message));
+        }
+        
+        function displayResults(data) {
+            // Update stats
+            document.getElementById('totalBookings').textContent = data.totalBookings.toLocaleString();
+            document.getElementById('teu20').textContent = data.teu20.toLocaleString();
+            document.getElementById('teu40').textContent = data.teu40.toLocaleString();
+            document.getElementById('totalTeu').textContent = data.totalTeu.toLocaleString();
+            
+            // Update charts
+            updateCharts(data);
+            
+            // Update table
+            updateTable(data.routes);
+        }
+        
+        function updateCharts(data) {
+            // Destroy old charts
+            if (polChart) polChart.destroy();
+            if (podChart) podChart.destroy();
+            
+            // POL Chart
+            const polCtx = document.getElementById('polChart').getContext('2d');
+            polChart = new Chart(polCtx, {
+                type: 'bar',
+                data: {
+                    labels: data.polData.labels,
+                    datasets: [{
+                        label: 'TEU',
+                        data: data.polData.data,
+                        backgroundColor: 'rgba(102, 126, 234, 0.8)',
+                        borderColor: 'rgba(102, 126, 234, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+            
+            // POD Chart
+            const podCtx = document.getElementById('podChart').getContext('2d');
+            podChart = new Chart(podCtx, {
+                type: 'bar',
+                data: {
+                    labels: data.podData.labels,
+                    datasets: [{
+                        label: 'TEU',
+                        data: data.podData.data,
+                        backgroundColor: 'rgba(118, 75, 162, 0.8)',
+                        borderColor: 'rgba(118, 75, 162, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        }
+        
+        function updateTable(routes) {
+            const tbody = document.getElementById('routesTable');
+            tbody.innerHTML = routes.map(r => `
+                <tr>
+                    <td>${r.pol}</td>
+                    <td>${r.pod}</td>
+                    <td>${r.teu20}</td>
+                    <td>${r.teu40}</td>
+                    <td class="teu-highlight">${r.total}</td>
+                </tr>
+            `).join('');
+        }
+        
+        // Enter key to search
+        document.getElementById('vesselInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') searchVessel();
         });
     </script>
 </body>
