@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Freight Rate Report - ILUE2612W</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    font-size: 12px;
+    color: #1a1a1a;
+    background: #f4f6f9;
+    padding: 20px;
+  }
+  .page {
+    max-width: 1100px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 6px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.10);
+    overflow: hidden;
+  }
+
+  /* ── REPORT HEADER ── */
+  .report-header {
+    background: linear-gradient(135deg, #1F4E79 0%, #2E75B6 100%);
+    color: #fff;
+    padding: 24px 32px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+  .report-title {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+  }
+  .report-subtitle {
+    font-size: 11px;
+    opacity: 0.8;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+  .header-meta {
+    text-align: right;
+    font-size: 11px;
+    line-height: 1.8;
+    opacity: 0.9;
+  }
+
+  /* ── VESSEL INFO BANNER ── */
+  .vessel-banner {
+    background: #2E75B6;
+    color: #fff;
+    display: flex;
+    flex-wrap: wrap;
+    padding: 14px 32px;
+    gap: 0;
+  }
+  .vessel-item {
+    flex: 1;
+    min-width: 140px;
+    padding: 6px 16px;
+    border-left: 1px solid rgba(255,255,255,0.25);
+  }
+  .vessel-item:first-child { border-left: none; padding-left: 0; }
+  .vessel-label {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    opacity: 0.7;
+    margin-bottom: 2px;
+  }
+  .vessel-value {
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  /* ── SUMMARY CARDS ── */
+  .summary-cards {
+    display: flex;
+    padding: 20px 32px;
+    gap: 16px;
+    background: #FAFBFC;
+    border-bottom: 1px solid #e8eaed;
+  }
+  .card {
+    flex: 1;
+    background: #fff;
+    border: 1px solid #e0e4ea;
+    border-radius: 6px;
+    padding: 14px 18px;
+    text-align: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  .card-label {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #888;
+    margin-bottom: 4px;
+  }
+  .card-value {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1F4E79;
+  }
+  .card-value.green { color: #375623; }
+  .card-value.orange { color: #7f4500; }
+
+  /* ── OFT RATE TABLE ── */
+  .section-title {
+    padding: 14px 32px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #1F4E79;
+    border-bottom: 2px solid #1F4E79;
+    margin-bottom: 0;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11.5px;
+  }
+  thead tr {
+    background: #1F4E79;
+    color: #fff;
+  }
+  thead th {
+    padding: 9px 12px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    white-space: nowrap;
+  }
+  thead th.center { text-align: center; }
+  thead th.right  { text-align: right; }
+
+  tbody tr:nth-child(even)  { background: #F2F7FC; }
+  tbody tr:nth-child(odd)   { background: #fff; }
+  tbody tr.subtotal         { background: #D6E4F0 !important; font-weight: 600; }
+  tbody tr.grandtotal       { background: #1F4E79 !important; color: #fff; font-weight: 700; }
+  tbody tr.grandtotal td    { border-color: #2E75B6 !important; }
+
+  td {
+    padding: 7px 12px;
+    border-bottom: 1px solid #e8eaed;
+    vertical-align: middle;
+  }
+  td.center { text-align: center; }
+  td.right  { text-align: right; font-weight: 500; }
+  td.mono   { font-family: 'Courier New', monospace; font-size: 11px; }
+
+  .bl-no {
+    font-family: 'Courier New', monospace;
+    font-size: 10.5px;
+    color: #1F4E79;
+    font-weight: 600;
+  }
+  .route-badge {
+    background: #E2EFDA;
+    color: #375623;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 600;
+  }
+  .route-badge.dj { background: #FCE4D6; color: #843C0C; }
+  .route-badge.mun{ background: #FFF2CC; color: #7f5900; }
+  .route-badge.nsa{ background: #DDEBF7; color: #1F4E79; }
+  .route-badge.yae{ background: #EDE7F6; color: #4A148C; }
+
+  /* Freight rate cells */
+  .rate-cell {
+    text-align: right;
+    font-weight: 600;
+    font-family: 'Courier New', monospace;
+  }
+  .rate-oft  { color: #375623; }
+  .rate-wrs  { color: #7f4500; }
+  .rate-lss  { color: #843C0C; }
+  .rate-cic  { color: #1F4E79; }
+
+  .code-tag {
+    display: inline-block;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 3px;
+    margin-right: 2px;
+  }
+  .tag-oft { background: #E2EFDA; color: #375623; }
+  .tag-wrs { background: #FFF2CC; color: #7f5900; }
+  .tag-lss { background: #FCE4D6; color: #843C0C; }
+  .tag-cic { background: #DDEBF7; color: #1F4E79; }
+
+  /* ── FREIGHT RATE MATRIX ── */
+  .matrix-table td {
+    min-width: 80px;
+  }
+  .matrix-table td:first-child {
+    min-width: 140px;
+    font-weight: 600;
+    background: #FAFBFC;
+  }
+  .rate-input {
+    width: 72px;
+    text-align: right;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    padding: 3px 6px;
+    background: #fffef0;
+  }
+
+  /* ── FAK vs T1 SECTION ── */
+  .rate-type-badge {
+    display: inline-block;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .badge-fak  { background: #E2EFDA; color: #375623; }
+  .badge-t1   { background: #FFF2CC; color: #7f5900; }
+  .badge-neg  { background: #FCE4D6; color: #843C0C; }
+  .rate-diff  { font-size: 9px; font-weight: 600; }
+  .diff-neg   { color: #c00000; }
+  .diff-pos   { color: #375623; }
+  .bar-bg {
+    background: #e8eaed;
+    border-radius: 6px;
+    height: 8px;
+    overflow: hidden;
+    display: inline-block;
+    vertical-align: middle;
+    width: 120px;
+  }
+  .bar-fak  { background: #70AD47; height: 100%; border-radius: 6px; }
+  .bar-t1   { background: #ED7D31; height: 100%; border-radius: 6px; }
+  .bar-neg  { background: #C00000; height: 100%; border-radius: 6px; }
+  .stat-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #fff;
+    border: 1px solid #e0e4ea;
+    border-radius: 20px;
+    padding: 4px 14px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-right: 8px;
+  }
+  .stat-pill .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+  }
+  .dot-fak  { background: #70AD47; }
+  .dot-t1   { background: #ED7D31; }
+  .dot-neg  { background: #C00000; }
+  .kpi-highlight {
+    background: #FCE4D6;
+    border-left: 4px solid #C00000;
+    padding: 10px 16px;
+    margin: 0 32px 16px;
+    border-radius: 0 4px 4px 0;
+    font-size: 11px;
+  }
+
+  /* ── FOOTER ── */
+  .report-footer {
+    background: #FAFBFC;
+    border-top: 1px solid #e0e4ea;
+    padding: 12px 32px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: #888;
+  }
+
+  @media print {
+    body { background: #fff; padding: 0; }
+    .page { box-shadow: none; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- REPORT HEADER -->
+  <div class="report-header">
+    <div>
+      <div class="report-subtitle">CU Lines · CSX Service</div>
+      <div class="report-title">FREIGHT RATE REPORT</div>
+    </div>
+    <div class="header-meta">
+      <div>Generated: 2026-04-09</div>
+      <div>Currency: USD</div>
+    </div>
+  </div>
+
+  <!-- VESSEL INFO BANNER -->
+  <div class="vessel-banner">
+    <div class="vessel-item">
+      <div class="vessel-label">Vessel / VVD</div>
+      <div class="vessel-value">ITAL USODIMARE / ILUE2612W</div>
+    </div>
+    <div class="vessel-item">
+      <div class="vessel-label">Lane / Direction</div>
+      <div class="vessel-value">CSX · 187W (Westbound)</div>
+    </div>
+    <div class="vessel-item">
+      <div class="vessel-label">Sail Date</div>
+      <div class="vessel-value">2026-03-22</div>
+    </div>
+    <div class="vessel-item">
+      <div class="vessel-label">Total B/L</div>
+      <div class="vessel-value">9</div>
+    </div>
+    <div class="vessel-item">
+      <div class="vessel-label">Route</div>
+      <div class="vessel-value">CNTAO → Multiple PODs</div>
+    </div>
+  </div>
+
+  <!-- SUMMARY CARDS -->
+  <div class="summary-cards">
+    <div class="card">
+      <div class="card-label">Total B/L</div>
+      <div class="card-value">9</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Total TEU</div>
+      <div class="card-value green">18</div>
+    </div>
+    <div class="card">
+      <div class="card-label">OFT Revenue (USD)</div>
+      <div class="card-value green">$73,600</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Charge Lines</div>
+      <div class="card-value">116</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Routes Covered</div>
+      <div class="card-value">5</div>
+    </div>
+  </div>
+
+  <!-- ── OFT RATE BY ROUTE TABLE ── -->
+  <div class="section-title">Section 1 · Ocean Freight Rate (OFT) by Route</div>
+  <table>
+    <thead>
+      <tr>
+        <th>Route</th>
+        <th class="center">Container Type</th>
+        <th class="center">No. of B/L</th>
+        <th class="right">OFT Rate (USD)</th>
+        <th class="right">Total OFT (USD)</th>
+        <th>B/L Reference</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- INNSA 40HC - OFT: 1300 x 4 -->
+      <tr>
+        <td><span class="route-badge nsa">CNTAO → INNSA</span></td>
+        <td class="center">40HC</td>
+        <td class="center">4</td>
+        <td class="right rate-cell rate-oft">1,300</td>
+        <td class="right rate-cell rate-oft">5,200</td>
+        <td class="mono">CULVTAO2602531, 2602535, 2602556, 2602742</td>
+      </tr>
+      <!-- INMUN 40HC - OFT: 1500 x 2 -->
+      <tr>
+        <td><span class="route-badge mun">CNTAO → INMUN</span></td>
+        <td class="center">40HC</td>
+        <td class="center">2</td>
+        <td class="right rate-cell rate-oft">1,500</td>
+        <td class="right rate-cell rate-oft">3,000</td>
+        <td class="mono">CULVTAO2602503, 2602562</td>
+      </tr>
+      <!-- INMUN FE40 - OFT: 1500 x 1 -->
+      <tr>
+        <td><span class="route-badge mun">CNTAO → INMUN</span></td>
+        <td class="center">FE40</td>
+        <td class="center">1</td>
+        <td class="right rate-cell rate-oft">1,500</td>
+        <td class="right rate-cell rate-oft">1,500</td>
+        <td class="mono">CULVTAO2602661</td>
+      </tr>
+      <!-- YEADE 40HC - OFT: 5100 x 1 -->
+      <tr>
+        <td><span class="route-badge yae">CNTAO → YEADE</span></td>
+        <td class="center">40HC</td>
+        <td class="center">1</td>
+        <td class="right rate-cell rate-oft">5,100</td>
+        <td class="right rate-cell rate-oft">5,100</td>
+        <td class="mono">CULVTAO2602882</td>
+      </tr>
+      <!-- DJJIB FE40 - OFT: 3700 x 1 -->
+      <tr>
+        <td><span class="route-badge dj">CNTAO → DJJIB</span></td>
+        <td class="center">FE40</td>
+        <td class="center">1</td>
+        <td class="right rate-cell rate-oft">3,700</td>
+        <td class="right rate-cell rate-oft">3,700</td>
+        <td class="mono">CULVTAO2602773</td>
+      </tr>
+      <!-- Grand Total OFT -->
+      <tr class="grandtotal">
+        <td colspan="3"><span style="padding-left:8px">GRAND TOTAL</span></td>
+        <td class="right">—</td>
+        <td class="right">$18,500</td>
+        <td>9 B/L</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- ── FREIGHT RATE MATRIX ── -->
+  <div class="section-title">Section 2 · Freight Rate Matrix (USD)</div>
+  <table class="matrix-table">
+    <thead>
+      <tr>
+        <th>Route</th>
+        <th class="center">Type</th>
+        <th class="right">OFT</th>
+        <th class="right">WRS</th>
+        <th class="right">LSS</th>
+        <th class="right">CIC</th>
+        <th class="right">Total / Box</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>CNTAO → INNSA</td>
+        <td class="center">40HC</td>
+        <td class="right rate-cell rate-oft">1,300</td>
+        <td class="right">—</td>
+        <td class="right rate-cell rate-lss">100</td>
+        <td class="right rate-cell rate-cic">200</td>
+        <td class="right" style="font-weight:700;color:#375623">1,600</td>
+      </tr>
+      <tr>
+        <td>CNTAO → INMUN</td>
+        <td class="center">40HC</td>
+        <td class="right rate-cell rate-oft">1,500</td>
+        <td class="right">—</td>
+        <td class="right rate-cell rate-lss">100</td>
+        <td class="right">—</td>
+        <td class="right" style="font-weight:700;color:#375623">1,600</td>
+      </tr>
+      <tr>
+        <td>CNTAO → INMUN</td>
+        <td class="center">FE40</td>
+        <td class="right rate-cell rate-oft">1,500</td>
+        <td class="right">—</td>
+        <td class="right rate-cell rate-lss">100</td>
+        <td class="right">—</td>
+        <td class="right" style="font-weight:700;color:#375623">1,600</td>
+      </tr>
+      <tr>
+        <td>CNTAO → YEADE</td>
+        <td class="center">40HC</td>
+        <td class="right rate-cell rate-oft">5,100</td>
+        <td class="right">—</td>
+        <td class="right rate-cell rate-lss">100</td>
+        <td class="right">—</td>
+        <td class="right" style="font-weight:700;color:#4A148C">5,200</td>
+      </tr>
+      <tr>
+        <td>CNTAO → DJJIB</td>
+        <td class="center">FE40</td>
+        <td class="right rate-cell rate-oft">3,700</td>
+        <td class="right">—</td>
+        <td class="right rate-cell rate-lss">100</td>
+        <td class="right">—</td>
+        <td class="right" style="font-weight:700;color:#843C0C">3,800</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- ── FAK vs T1 ANALYSIS ── -->
+  <div class="section-title">Section 3 · FAK vs T1 Rate Analysis</div>
+
+  <!-- KPI Pills -->
+  <div style="padding: 16px 32px 4px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+    <div class="stat-pill"><span class="dot dot-fak"></span>FAK Standard &nbsp;<strong>1 B/L</strong></div>
+    <div class="stat-pill"><span class="dot dot-t1"></span>T1 Volume Discount &nbsp;<strong>1 B/L</strong></div>
+    <div class="stat-pill"><span class="dot dot-neg"></span>Spot Rate &nbsp;<strong>7 B/L</strong></div>
+  </div>
+
+  <!-- Rate Type Ratio Bar -->
+  <div style="padding: 12px 32px 4px;">
+    <div style="font-size:9px; text-transform:uppercase; letter-spacing:1.5px; color:#888; margin-bottom:6px;">Rate Type Distribution (by B/L Count)</div>
+    <div style="display:flex; height:28px; border-radius:6px; overflow:hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.12);">
+      <div style="width:11.1%; background:#70AD47; display:flex; align-items:center; justify-content:center; color:#fff; font-size:10px; font-weight:700;">FAK<br>11%</div>
+      <div style="width:11.1%; background:#ED7D31; display:flex; align-items:center; justify-content:center; color:#fff; font-size:10px; font-weight:700;">T1<br>11%</div>
+      <div style="width:77.8%; background:#C00000; display:flex; align-items:center; padding-left:10px; color:#fff; font-size:10px; font-weight:700;">Spot Rate 78%</div>
+    </div>
+  </div>
+
+  <!-- Highlight callout -->
+  <div class="kpi-highlight">
+    <strong style="color:#843C0C">78% of B/Ls use negotiated rates</strong> — all below FAK standard. Only INNSA and INMUN have 1 B/L each using standard FAK / T1 pricing. YEADE route is the only lane where actual rate exceeds T1 ($5,100 vs T1 $5,000).
+  </div>
+
+  <!-- Rate type breakdown by POD -->
+  <div style="padding: 0 32px 16px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;">
+    <!-- INNSA -->
+    <div style="background:#FAFBFC; border:1px solid #e0e4ea; border-radius:6px; padding:12px;">
+      <div style="font-size:9px; text-transform:uppercase; letter-spacing:1px; color:#888; margin-bottom:4px;">INNSA · 4 B/L</div>
+      <div style="display:flex; align-items:center; gap:6px; margin-bottom:4px;">
+        <span class="rate-type-badge badge-fak">FAK</span><span style="font-size:10px;">1 B/L</span>
+      </div>
+      <div class="bar-bg"><div class="bar-fak" style="width:25%"></div></div>
+      <div style="margin-top:6px; display:flex; align-items:center; gap:6px;">
+        <span class="rate-type-badge badge-neg">Spot</span><span style="font-size:10px;">3 B/L</span>
+      </div>
+      <div class="bar-bg"><div style="background:#C00000;height:100%;border-radius:6px;width:75%"></div></div>
+    </div>
+    <!-- INMUN -->
+    <div style="background:#FAFBFC; border:1px solid #e0e4ea; border-radius:6px; padding:12px;">
+      <div style="font-size:9px; text-transform:uppercase; letter-spacing:1px; color:#888; margin-bottom:4px;">INMUN · 3 B/L</div>
+      <div style="display:flex; align-items:center; gap:6px; margin-bottom:4px;">
+        <span class="rate-type-badge badge-t1">T1</span><span style="font-size:10px;">1 B/L</span>
+      </div>
+      <div class="bar-bg"><div class="bar-t1" style="width:33%"></div></div>
+      <div style="margin-top:6px; display:flex; align-items:center; gap:6px;">
+        <span class="rate-type-badge badge-neg">Spot</span><span style="font-size:10px;">2 B/L</span>
+      </div>
+      <div class="bar-bg"><div style="background:#C00000;height:100%;border-radius:6px;width:67%"></div></div>
+    </div>
+    <!-- DJJIB -->
+    <div style="background:#FAFBFC; border:1px solid #e0e4ea; border-radius:6px; padding:12px;">
+      <div style="font-size:9px; text-transform:uppercase; letter-spacing:1px; color:#888; margin-bottom:4px;">DJJIB · 1 B/L</div>
+      <div style="display:flex; align-items:center; gap:6px;">
+        <span class="rate-type-badge badge-neg">Spot</span><span style="font-size:10px;">1 B/L</span>
+      </div>
+      <div class="bar-bg"><div style="background:#C00000;height:100%;border-radius:6px;width:100%"></div></div>
+      <div style="margin-top:4px; font-size:9px; color:#843C0C;">$3,700 (FAK=$4,000, T1=$3,800)</div>
+    </div>
+    <!-- YEADE -->
+    <div style="background:#FAFBFC; border:1px solid #e0e4ea; border-radius:6px; padding:12px;">
+      <div style="font-size:9px; text-transform:uppercase; letter-spacing:1px; color:#888; margin-bottom:4px;">YEADE · 1 B/L</div>
+      <div style="display:flex; align-items:center; gap:6px;">
+        <span class="rate-type-badge badge-neg">Spot</span><span style="font-size:10px;">1 B/L</span>
+      </div>
+      <div class="bar-bg"><div style="background:#C00000;height:100%;border-radius:6px;width:100%"></div></div>
+      <div style="margin-top:4px; font-size:9px; color:#375623;">$5,100 > T1 $5,000 <span style="color:#375623;font-weight:600">[above T1]</span></div>
+    </div>
+  </div>
+
+  <!-- FAK vs T1 Detail Table -->
+  <table style="margin: 0 32px 8px;">
+    <thead>
+      <tr style="background:#1F4E79; color:#fff;">
+        <th style="padding:8px 12px; text-align:left; font-size:10px; text-transform:uppercase; letter-spacing:0.8px;">B/L No.</th>
+        <th style="padding:8px 12px; text-align:center; font-size:10px; text-transform:uppercase; letter-spacing:0.8px;">Route</th>
+        <th style="padding:8px 12px; text-align:center; font-size:10px; text-transform:uppercase; letter-spacing:0.8px;">Ctn</th>
+        <th style="padding:8px 12px; text-align:center; font-size:10px; text-transform:uppercase; letter-spacing:0.8px;">Rate Type</th>
+        <th style="padding:8px 12px; text-align:right; font-size:10px; text-transform:uppercase; letter-spacing:0.8px;">Actual (USD)</th>
+        <th style="padding:8px 12px; text-align:right; font-size:10px; text-transform:uppercase; letter-spacing:0.8px;">FAK Std (USD)</th>
+        <th style="padding:8px 12px; text-align:right; font-size:10px; text-transform:uppercase; letter-spacing:0.8px;">T1 Std (USD)</th>
+        <th style="padding:8px 12px; text-align:right; font-size:10px; text-transform:uppercase; letter-spacing:0.8px;">vs FAK</th>
+        <th style="padding:8px 12px; text-align:center; font-size:10px; text-transform:uppercase; letter-spacing:0.8px;">% of Vessel</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- FAK rows -->
+      <tr style="background:#fff;">
+        <td style="padding:6px 12px; font-family:'Courier New',monospace; font-size:10.5px; color:#1F4E79; font-weight:600;">CULVTAO2602556</td>
+        <td style="padding:6px 12px; text-align:center;"><span class="route-badge nsa">CNTAO→INNSA</span></td>
+        <td style="padding:6px 12px; text-align:center; font-size:10px;">40HC</td>
+        <td style="padding:6px 12px; text-align:center;"><span class="rate-type-badge badge-fak">FAK</span></td>
+        <td style="padding:6px 12px; text-align:right; font-weight:700; font-family:'Courier New',monospace; color:#375623;">1,700</td>
+        <td style="padding:6px 12px; text-align:right; font-family:'Courier New',monospace; color:#888;">1,700</td>
+        <td style="padding:6px 12px; text-align:right; font-family:'Courier New',monospace; color:#888;">1,600</td>
+        <td style="padding:6px 12px; text-align:right; font-weight:600; color:#375623;">=</td>
+        <td style="padding:6px 12px; text-align:center;"><span class="rate-type-badge badge-fak">9.2%</span></td>
+      </tr>
+      <!-- T1 rows -->
+      <tr style="background:#F2F7FC;">
+        <td style="padding:6px 12px; font-family:'Courier New',monospace; font-size:10.5px; color:#1F4E79; font-weight:600;">CULVTAO2602503</td>
+        <td style="padding:6px 12px; text-align:center;"><span class="route-badge mun">CNTAO→INMUN</span></td>
+        <td style="padding:6px 12px; text-align:center; font-size:10px;">40HC</td>
+        <td style="padding:6px 12px; text-align:center;"><span class="rate-type-badge badge-t1">T1</span></td>
+        <td style="padding:6px 12px; text-align:right; font-weight:700; font-family:'Courier New',monospace; color:#7f5900;">1,600</td>
+        <td style="padding:6px 12px; text-align:right; font-family:'Courier New',monospace; color:#888;">1,700</td>
+        <td style="padding:6px 12px; text-align:right; font-family:'Courier New',monospace; color:#7f5900; font-weight:600;">1,600</td>
+        <td style="padding:6px 12px; text-align:right; font-weight:600; color:#843C0C;">-100</td>
+        <td style="padding:6px 12px; text-align:center;"><span class="rate-type-badge badge-t1">8.6%</span></td>
+      </tr>
+      <!-- Spot rows -->
+      <tr style="background:#FCE4D6;">
+        <td style="padding:6px 12px; font-family:'Courier New',monospace; font-size:10.5px; color:#1F4E79; font-weight:600;">CULVTAO2602531</td>
+        <td style="padding:6px 12px; text-align:center;"><span class="route-badge nsa">CNTAO→INNSA</span></td>
+        <td style="padding:6px 12px; text-align:center; font-size:10px;">40HC</td>
+        <td style="padding:6px 12px; text-align:center;"><span class="rate-type-badge badge-neg">Spot</span></td>
+        <td style="padding:6px 12px; text-align:right; font-weight:700; font-family:'Courier New',monospace;">1,400</td>
+        <td style="padding:6px 12px; text-align:right; font-family:'Courier New',monospace; color:#888;">1,700</td>
+        <td style="padding:6px 12px; text-align:right; font-family:'Courier New',monospace; color:#888;">1,600</td>
+        <td style="padding:6px 12px; text-align:right; font-weight:600; color:#c00000;">-300</td>
+        <td style="padding:6px 12px; text-align:center;"><span class="rate-type-badge badge-neg">7.6%</span></td>
+      </tr>
+      <tr style="background:#fff;">
+        <td style="padding:6px 12px; font-family:'Courier New',monospace; font-size:10.5px; color:#1F4E79; font-weight:600;">CULVTAO2602535</td>
+        <td style="padding:6px 12px; text-align:center;"><span class="route-badge nsa">CNTAO→INNSA</span></td>
+        <td style="padding:6px 12px; text-align:center; font-size:10px;">40HC</td>
+        <td style="padding:6px 12px; text-align:center;"><span class="rate-type-badge badge-neg">Spot</span></td>
+        <td style="padding:6px 12px; text-align:right; font-weight:700; font-family:'Courier New',monospace;">1,400</td>
+        <td style="padding:6px 12px; text-align:right; font-family:'Courier New',monospace; color:#888;">1,700</td>
+        <td style="padding:6px 12px; text-align:right; font-family:'Courier New',monospace; color:#888;">1,600</td>
+        <td style="padding:6px 12px; text-align:right; font-weight:600; color:#c00000;">-300</td>
+        <td style="padding:6px 12px; text-align:center;"><span class="rate-type-badge badge-neg">7.6%</span></td>
+      </tr>
+      <tr style="background:#F2F7FC;">
+        <td style="padding:6px 12px; font-family:'Courier New',monospace; font-size:10.5px; color:#1F4E79; font-weight:600;">CULVTAO2602562</td>
+        <td style="padding:6px 12px; text-align:center;"><span class="route-badge mun">CNTAO→INMUN</span></td>
+        <td style="padding:6px 12px; text-align:center; font-size:10px;">40HC</td>
+        <td style="padding:6px 12px; text-align:center;"><span class="rate-type-badge badge-neg">Spot</span></td>
+        <td style="padding:6px 12px; text-align:right; font-weight:700; font-family:'Courier New',monospace;">1,500</td>
+        <td style="padding:6px 12px; text-align:right; font-family:'Courier New',monospace; color:#888;">1,700</td>
+        <td style="padding:6px 12px; text-align:right; font-family:'Courier New',monospace; color:#888;">1,600</td>
+        <td style="padding:6px 12px; text-align:right; font-weight:600; color:#c00000;">-200</td>
+        <td style="padding:6px 12px; text-align:center;"><span class="rate-type-badge badge-neg">8.1%</span></td>
+      </tr>
+      <tr style="background:#fff;">
+        <td style="padding:6px 12px; font-family:'Courier New',monospace; font-size:10.5px; color:#1F4E79; font-weight:600;">CULVTAO2602661</td>
+        <td style="padding:6px 12px; text-align:center;"><span class="route-badge mun">CNTAO→INMUN</span></td>
+        <td style="padding:6px 12px; text-align:center; font-size:10px;">FE40</td>
+        <td style="padding:6px 12px; text-align:center;"><span class="rate-type-badge badge-neg">Spot</span></td>
+        <td style="padding:6px 12px; text-align:right; font-weight:700; font-family:'Courier New',monospace;">1,500</td>
+        <td style="padding:6px 12px; text-align:right; font-family:'Courier New',monospace; color:#888;">1,700</td>
+        <td style="padding:6px 12px; text-align:right; font-family:'Courier New',monospace; color:#888;">1,600</td>
+        <td style="padding:6px 12px; text-align:right; font-weight:600; color:#c00000;">-200</td>
+        <td style="padding:6px 12px; text-align:center;"><span class="rate-type-badge badge-neg">8.1%</span></td>
+      </tr>
+      <tr style="background:#F2F7FC;">
+        <td style="padding:6px 12px; font-family:'Courier New',monospace; font-size:10.5px; color:#1F4E79; font-weight:600;">CULVTAO2602742</td>
+        <td style="padding:6px 12px; text-align:center;"><span class="route-badge nsa">CNTAO→INNSA</span></td>
+        <td style="padding:6px 12px; text-align:center; font-size:10px;">40HC</td>
+        <td style="padding:6px 12px; text-align:center;"><span class="rate-type-badge badge-neg">Spot</span></td>
+        <td style="padding:6px 12px; text-align:right; font-weight:700; font-family:'Courier New',monospace;">1,300</td>
+        <td style="padding:6px 12px; text-align:right; font-family:'Courier New',monospace; color:#888;">1,700</td>
+        <td style="padding:6px 12px; text-align:right; font-family:'Courier New',monospace; color:#888;">1,600</td>
+        <td style="padding:6px 12px; text-align:right; font-weight:600; color:#c00000;">-400</td>
+        <td style="padding:6px 12px; text-align:center;"><span class="rate-type-badge badge-neg">7.0%</span></td>
+      </tr>
+      <tr style="background:#fff;">
+        <td style="padding:6px 12px; font-family:'Courier New',monospace; font-size:10.5px; color:#1F4E79; font-weight:600;">CULVTAO2602773</td>
+        <td style="padding:6px 12px; text-align:center;"><span class="route-badge dj">CNTAO→DJJIB</span></td>
+        <td style="padding:6px 12px; text-align:center; font-size:10px;">FE40</td>
+        <td style="padding:6px 12px; text-align:center;"><span class="rate-type-badge badge-neg">Spot</span></td>
+        <td style="padding:6px 12px; text-align:right; font-weight:700; font-family:'Courier New',monospace;">3,700</td>
+        <td style="padding:6px 12px; text-align:right; font-family:'Courier New',monospace; color:#888;">4,000</td>
+        <td style="padding:6px 12px; text-align:right; font-family:'Courier New',monospace; color:#888;">3,800</td>
+        <td style="padding:6px 12px; text-align:right; font-weight:600; color:#c00000;">-300</td>
+        <td style="padding:6px 12px; text-align:center;"><span class="rate-type-badge badge-neg">20.0%</span></td>
+      </tr>
+      <tr style="background:#F2F7FC;">
+        <td style="padding:6px 12px; font-family:'Courier New',monospace; font-size:10.5px; color:#1F4E79; font-weight:600;">CULVTAO2602882</td>
+        <td style="padding:6px 12px; text-align:center;"><span class="route-badge yae">CNTAO→YEADE</span></td>
+        <td style="padding:6px 12px; text-align:center; font-size:10px;">40HC</td>
+        <td style="padding:6px 12px; text-align:center;"><span class="rate-type-badge badge-neg">Spot</span></td>
+        <td style="padding:6px 12px; text-align:right; font-weight:700; font-family:'Courier New',monospace;">5,100</td>
+        <td style="padding:6px 12px; text-align:right; font-family:'Courier New',monospace; color:#888;">5,200</td>
+        <td style="padding:6px 12px; text-align:right; font-family:'Courier New',monospace; color:#888;">5,000</td>
+        <td style="padding:6px 12px; text-align:right; font-weight:600; color:#375623;">-100</td>
+        <td style="padding:6px 12px; text-align:center;"><span class="rate-type-badge badge-neg">27.6%</span></td>
+      </tr>
+      <!-- Grand total -->
+      <tr style="background:#1F4E79; color:#fff;">
+        <td colspan="4" style="padding:8px 12px; font-weight:700;"><span style="padding-left:4px">GRAND TOTAL</span></td>
+        <td style="padding:8px 12px; text-align:right; font-weight:700;">$18,500</td>
+        <td style="padding:8px 12px; text-align:right;"></td>
+        <td style="padding:8px 12px; text-align:right;"></td>
+        <td style="padding:8px 12px; text-align:right; color:#FFC000;">Avg -$214/B/L</td>
+        <td style="padding:8px 12px; text-align:center; color:#FFC000; font-weight:700;">100%</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div style="padding: 0 32px 16px; font-size: 9.5px; color: #888; display:flex; gap:16px; flex-wrap:wrap;">
+    <span><span class="rate-type-badge badge-fak">FAK</span> FAK Standard Rate (Normal tariff)</span>
+    <span><span class="rate-type-badge badge-t1">T1</span> T1 OVER 10TEUS/SUL (Volume discount for ≥10 TEUs)</span>
+    <span><span class="rate-type-badge badge-neg">Spot</span> Spot Rate (Below standard)</span>
+  </div>
+
+  <!-- ── B/L DETAIL TABLE ── -->
+  <div class="section-title">Section 4 · B/L Detail</div>
+  <table>
+    <thead>
+      <tr>
+        <th>B/L No.</th>
+        <th>Shipper</th>
+        <th>POL</th>
+        <th>POD</th>
+        <th class="center">Ctn Type</th>
+        <th class="right">OFT (USD)</th>
+        <th class="right">LSS (USD)</th>
+        <th class="right">CIC (USD)</th>
+        <th class="right">Total (USD)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- BL: CULVTAO2602503 | CNTAO->INMUN | 40HC | OFT=1600, LSS=100 -->
+      <tr>
+        <td class="bl-no">CULVTAO2602503</td>
+        <td>QINGDAO WINTOP WORLDWIDE LOGISTICS...</td>
+        <td>CNTAO</td>
+        <td><span class="route-badge mun">INMUN</span></td>
+        <td class="center">40HC</td>
+        <td class="right rate-cell rate-oft">1,600</td>
+        <td class="right rate-cell rate-lss">100</td>
+        <td class="right">—</td>
+        <td class="right" style="font-weight:700">1,700</td>
+      </tr>
+      <!-- BL: CULVTAO2602531 | CNTAO->INNSA | 40HC | OFT=1400, LSS=100, CIC=200 -->
+      <tr>
+        <td class="bl-no">CULVTAO2602531</td>
+        <td>QINGDAO DSI LOGISTICS CO.,LTD</td>
+        <td>CNTAO</td>
+        <td><span class="route-badge nsa">INNSA</span></td>
+        <td class="center">40HC</td>
+        <td class="right rate-cell rate-oft">1,400</td>
+        <td class="right rate-cell rate-lss">100</td>
+        <td class="right rate-cell rate-cic">200</td>
+        <td class="right" style="font-weight:700">1,700</td>
+      </tr>
+      <!-- BL: CULVTAO2602535 | CNTAO->INNSA | 40HC | OFT=1400, LSS=100, CIC=200 -->
+      <tr>
+        <td class="bl-no">CULVTAO2602535</td>
+        <td>QINGDAO DSI LOGISTICS CO.,LTD</td>
+        <td>CNTAO</td>
+        <td><span class="route-badge nsa">INNSA</span></td>
+        <td class="center">40HC</td>
+        <td class="right rate-cell rate-oft">1,400</td>
+        <td class="right rate-cell rate-lss">100</td>
+        <td class="right rate-cell rate-cic">200</td>
+        <td class="right" style="font-weight:700">1,700</td>
+      </tr>
+      <!-- BL: CULVTAO2602556 | CNTAO->INNSA | 40HC | OFT=1700, LSS=100, CIC=200 -->
+      <tr>
+        <td class="bl-no">CULVTAO2602556</td>
+        <td>ORIENTAL LOGISTICS GROUP LTD</td>
+        <td>CNTAO</td>
+        <td><span class="route-badge nsa">INNSA</span></td>
+        <td class="center">40HC</td>
+        <td class="right rate-cell rate-oft">1,700</td>
+        <td class="right rate-cell rate-lss">100</td>
+        <td class="right rate-cell rate-cic">200</td>
+        <td class="right" style="font-weight:700">2,000</td>
+      </tr>
+      <!-- BL: CULVTAO2602562 | CNTAO->INMUN | 40HC | OFT=1500, LSS=100 -->
+      <tr>
+        <td class="bl-no">CULVTAO2602562</td>
+        <td>SINOTRANS CENTRAL CHINA CO.,LTD</td>
+        <td>CNTAO</td>
+        <td><span class="route-badge mun">INMUN</span></td>
+        <td class="center">40HC</td>
+        <td class="right rate-cell rate-oft">1,500</td>
+        <td class="right rate-cell rate-lss">100</td>
+        <td class="right">—</td>
+        <td class="right" style="font-weight:700">1,600</td>
+      </tr>
+      <!-- BL: CULVTAO2602661 | CNTAO->INMUN | FE40 | OFT=1500, LSS=100 -->
+      <tr>
+        <td class="bl-no">CULVTAO2602661</td>
+        <td>SINOTRANS CENTRAL CHINA CO.,LTD</td>
+        <td>CNTAO</td>
+        <td><span class="route-badge mun">INMUN</span></td>
+        <td class="center">FE40</td>
+        <td class="right rate-cell rate-oft">1,500</td>
+        <td class="right rate-cell rate-lss">100</td>
+        <td class="right">—</td>
+        <td class="right" style="font-weight:700">1,600</td>
+      </tr>
+      <!-- BL: CULVTAO2602742 | CNTAO->INNSA | 40HC | OFT=1300, LSS=100, CIC=200 -->
+      <tr>
+        <td class="bl-no">CULVTAO2602742</td>
+        <td>QINGDAO SKY OCEAN SHIPPING LIMITED</td>
+        <td>CNTAO</td>
+        <td><span class="route-badge nsa">INNSA</span></td>
+        <td class="center">40HC</td>
+        <td class="right rate-cell rate-oft">1,300</td>
+        <td class="right rate-cell rate-lss">100</td>
+        <td class="right rate-cell rate-cic">200</td>
+        <td class="right" style="font-weight:700">1,600</td>
+      </tr>
+      <!-- BL: CULVTAO2602773 | CNTAO->DJJIB | FE40 | OFT=3700, LSS=100 -->
+      <tr>
+        <td class="bl-no">CULVTAO2602773</td>
+        <td>QINGDAO SKY OCEAN SHIPPING LIMITED</td>
+        <td>CNTAO</td>
+        <td><span class="route-badge dj">DJJIB</span></td>
+        <td class="center">FE40</td>
+        <td class="right rate-cell rate-oft">3,700</td>
+        <td class="right rate-cell rate-lss">100</td>
+        <td class="right">—</td>
+        <td class="right" style="font-weight:700">3,800</td>
+      </tr>
+      <!-- BL: CULVTAO2602882 | CNTAO->YEADE | 40HC | OFT=5100, LSS=100 -->
+      <tr>
+        <td class="bl-no">CULVTAO2602882</td>
+        <td>QINGDAO PUFA CENTURY SHIPPING CO.,LTD</td>
+        <td>CNTAO</td>
+        <td><span class="route-badge yae">YEADE</span></td>
+        <td class="center">40HC</td>
+        <td class="right rate-cell rate-oft">5,100</td>
+        <td class="right rate-cell rate-lss">100</td>
+        <td class="right">—</td>
+        <td class="right" style="font-weight:700">5,200</td>
+      </tr>
+      <!-- Grand Total -->
+      <tr class="grandtotal">
+        <td colspan="5"><span style="padding-left:8px">GRAND TOTAL</span></td>
+        <td class="right">$18,500</td>
+        <td class="right">$900</td>
+        <td class="right">$1,600</td>
+        <td class="right">$20,900</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- ── TEU SUMMARY ── -->
+  <div class="section-title">Section 5 · TEU Summary by POD</div>
+
+  <!-- TEU KPI Cards -->
+  <div style="padding: 16px 32px 8px; display: flex; gap: 16px;">
+    <div style="flex:1; background:#E2EFDA; border:1px solid #70AD47; border-radius:6px; padding:12px 16px; text-align:center;">
+      <div style="font-size:9px; text-transform:uppercase; letter-spacing:1.5px; color:#375623; margin-bottom:4px;">Total TEU Loaded</div>
+      <div style="font-size:28px; font-weight:700; color:#375623;">18</div>
+      <div style="font-size:9px; color:#888; margin-top:2px;">9 B/L · 4 Routes</div>
+    </div>
+    <div style="flex:1; background:#FFF2CC; border:1px solid #ED7D31; border-radius:6px; padding:12px 16px; text-align:center;">
+      <div style="font-size:9px; text-transform:uppercase; letter-spacing:1.5px; color:#7f5900; margin-bottom:4px;">40HC</div>
+      <div style="font-size:28px; font-weight:700; color:#7f5900;">14</div>
+      <div style="font-size:9px; color:#888; margin-top:2px;">7 units × 2 TEU</div>
+    </div>
+    <div style="flex:1; background:#FCE4D6; border:1px solid #C00000; border-radius:6px; padding:12px 16px; text-align:center;">
+      <div style="font-size:9px; text-transform:uppercase; letter-spacing:1.5px; color:#843C0C; margin-bottom:4px;">FE40</div>
+      <div style="font-size:28px; font-weight:700; color:#843C0C;">4</div>
+      <div style="font-size:9px; color:#888; margin-top:2px;">2 units × 2 TEU</div>
+    </div>
+  </div>
+
+  <!-- TEU by POD Table -->
+  <table style="margin: 0 32px 8px;">
+    <thead>
+      <tr style="background:#1F4E79; color:#fff;">
+        <th style="padding:8px 12px; text-align:left; font-size:10px; text-transform:uppercase; letter-spacing:0.8px;">POD</th>
+        <th style="padding:8px 12px; text-align:center; font-size:10px; text-transform:uppercase; letter-spacing:0.8px;">40HC</th>
+        <th style="padding:8px 12px; text-align:center; font-size:10px; text-transform:uppercase; letter-spacing:0.8px;">FE40</th>
+        <th style="padding:8px 12px; text-align:center; font-size:10px; text-transform:uppercase; letter-spacing:0.8px;">Total TEU</th>
+        <th style="padding:8px 12px; text-align:center; font-size:10px; text-transform:uppercase; letter-spacing:0.8px;">Share</th>
+        <th style="padding:8px 12px; text-align:center; font-size:10px; text-transform:uppercase; letter-spacing:0.8px;">%</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="padding:7px 12px;"><span class="route-badge nsa">INNSA</span></td>
+        <td style="padding:7px 12px; text-align:center;">4</td>
+        <td style="padding:7px 12px; text-align:center;">—</td>
+        <td style="padding:7px 12px; text-align:center; font-weight:700;">8</td>
+        <td style="padding:7px 12px;">
+          <div class="bar-bg" style="width:100px;"><div style="background:#2E75B6;height:100%;border-radius:6px;width:89%"></div></div>
+        </td>
+        <td style="padding:7px 12px; text-align:center; font-weight:600; color:#2E75B6;">44%</td>
+      </tr>
+      <tr style="background:#F2F7FC;">
+        <td style="padding:7px 12px;"><span class="route-badge mun">INMUN</span></td>
+        <td style="padding:7px 12px; text-align:center;">2</td>
+        <td style="padding:7px 12px; text-align:center;">1</td>
+        <td style="padding:7px 12px; text-align:center; font-weight:700;">6</td>
+        <td style="padding:7px 12px;">
+          <div class="bar-bg" style="width:100px;"><div style="background:#ED7D31;height:100%;border-radius:6px;width:67%"></div></div>
+        </td>
+        <td style="padding:7px 12px; text-align:center; font-weight:600; color:#ED7D31;">33%</td>
+      </tr>
+      <tr>
+        <td style="padding:7px 12px;"><span class="route-badge dj">DJJIB</span></td>
+        <td style="padding:7px 12px; text-align:center;">—</td>
+        <td style="padding:7px 12px; text-align:center;">1</td>
+        <td style="padding:7px 12px; text-align:center; font-weight:700;">2</td>
+        <td style="padding:7px 12px;">
+          <div class="bar-bg" style="width:100px;"><div style="background:#C00000;height:100%;border-radius:6px;width:22%"></div></div>
+        </td>
+        <td style="padding:7px 12px; text-align:center; font-weight:600; color:#C00000;">11%</td>
+      </tr>
+      <tr style="background:#F2F7FC;">
+        <td style="padding:7px 12px;"><span class="route-badge yae">YEADE</span></td>
+        <td style="padding:7px 12px; text-align:center;">1</td>
+        <td style="padding:7px 12px; text-align:center;">—</td>
+        <td style="padding:7px 12px; text-align:center; font-weight:700;">2</td>
+        <td style="padding:7px 12px;">
+          <div class="bar-bg" style="width:100px;"><div style="background:#7030A0;height:100%;border-radius:6px;width:22%"></div></div>
+        </td>
+        <td style="padding:7px 12px; text-align:center; font-weight:600; color:#7030A0;">11%</td>
+      </tr>
+      <tr style="background:#1F4E79; color:#fff;">
+        <td style="padding:8px 12px; font-weight:700;" colspan="3"><span style="padding-left:4px">GRAND TOTAL</span></td>
+        <td style="padding:8px 12px; text-align:center; font-weight:700;">18</td>
+        <td style="padding:8px 12px;"></td>
+        <td style="padding:8px 12px; text-align:center; font-weight:700;">100%</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Note: POL is CNTAO for all B/Ls -->
+  <div style="padding: 0 32px 16px; font-size:9.5px; color:#888;">
+    <em>Note: All B/Ls loaded at POL <strong>CNTAO (Qingdao)</strong> · 40HC = 2 TEU · FE40 = 2 TEU</em>
+  </div>
+
+  <!-- ── LEGEND ── -->
+  <div style="padding:14px 32px; background:#FAFBFC; border-top:1px solid #e8eaed; font-size:10px; color:#888; display:flex; gap:20px; flex-wrap:wrap;">
+    <span><strong>Charge Code:</strong></span>
+    <span><span class="code-tag tag-oft">OFT</span> Ocean Freight</span>
+    <span><span class="code-tag tag-wrs">WRS</span> War Risk Surcharge</span>
+    <span><span class="code-tag tag-lss">LSS</span> Low Sulphur Surcharge</span>
+    <span><span class="code-tag tag-cic">CIC</span> Container Imbalance Charge</span>
+    <span style="margin-left:auto"><strong>Rate Type:</strong> <span style="background:#E2EFDA;color:#375623;padding:1px 6px;border-radius:3px;font-weight:600;">FAK</span> Standard Tariff &nbsp; <span style="background:#FFF2CC;color:#7f5900;padding:1px 6px;border-radius:3px;font-weight:600;">T1</span> ≥10TEUs Volume &nbsp; <span style="background:#FCE4D6;color:#843C0C;padding:1px 6px;border-radius:3px;font-weight:600;">Spot</span> Spot Rate</span>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="report-footer">
+    <span>Source: FineBI · Income Data Base-Marketing · ILUE2612W</span>
+    <span>CU Lines IT · 2026-04-09</span>
+  </div>
+
+</div>
+</body>
+</html>
