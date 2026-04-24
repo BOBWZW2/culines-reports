@@ -92,7 +92,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-s
 .stat .val{font-size:20px;font-weight:700;color:var(--tx2)}
 
 .tcard{background:var(--bg2);border:1px solid var(--bd);border-radius:12px;overflow:hidden;transition:background .3s,border .3s}
-.thdr{padding:14px 18px;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between}
+.thdr{padding:14px 18px;border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:12px;}
 .thdr h3{font-size:14px;color:var(--tx4)}
 .btn-exp{padding:7px 14px;background:var(--exp-btn);color:var(--exp-btn-t);border:1px solid var(--exp-btn-b);border-radius:6px;font-size:13px;cursor:pointer;transition:background .15s}
 .btn-exp:hover{filter:brightness(1.2)}
@@ -185,16 +185,13 @@ td{padding:9px 12px;border-bottom:1px solid var(--bd2);color:var(--tx3)}
 </div>
 <div class="tcard" id="podCard" style="display:none;">
 <div class="thdr"><h3>📋 POD/DEL 货量汇总</h3>
-<div style="display:flex;align-items:center;gap:8px;">
 <div id="viewToggle" style="display:inline-flex;border:1px solid var(--bd);border-radius:6px;overflow:hidden;">
 <button class="toggle-btn active" id="btnPod" onclick="switchView('pod')" style="padding:5px 12px;font-size:12px;background:var(--ac);color:#fff;border:none;cursor:pointer;">POD</button>
 <button class="toggle-btn" id="btnDel" onclick="switchView('del')" style="padding:5px 12px;font-size:12px;background:transparent;color:var(--tx4);border:none;cursor:pointer;border-left:1px solid var(--bd);">DEL</button>
 </div>
-<button class="btn-exp" onclick="ex()">📥 导出 CSV</button>
-</div>
 </div>
 <div class="twrap">
-<table style="table-layout:fixed;" id="podTbl"><colgroup><col style="width:30px"><col style="width:40px"><col><col style="width:50px"><col style="width:50px"><col><col><col><col><col><col></colgroup><thead><tr><th></th><th>排名</th><th id="summaryLabel">POD</th><th>20'</th><th>40'</th><th>货量 TEU</th><th>EIR</th><th>提柜 OP</th><th>总重 Ton</th><th>均重 T/TEU</th><th>占比</th></tr></thead>
+<table style="table-layout:fixed;" id="podTbl"><colgroup><col style="width:30px"><col style="width:40px"><col><col><col><col><col><col><col><col><col></colgroup><thead><tr><th></th><th>排名</th><th id="summaryLabel">POD</th><th>20'</th><th>40'</th><th>货量 TEU</th><th>EIR</th><th>提柜 OP</th><th>总重 Ton</th><th>均重 T/TEU</th><th>占比</th></tr></thead>
 <tbody id="pb"></tbody>
 </table>
 </div>
@@ -425,17 +422,20 @@ function renderSummary(){
     var ptb=document.getElementById('pb');
     epod.clear();edel.clear();
     var ph='';
+    var sumTeu=0,sumGross=0,sumOp=0,sumEir=0,sum20=0,sum40=0;
     if(_summaryView==='del'){
         var delMap={};
         d.polSummary.forEach(function(p){
             p.podList.forEach(function(pd){
                 if(pd.delList){
                     pd.delList.forEach(function(dd){
-                        if(!delMap[dd.del]) delMap[dd.del]={teu:0,grossTon:0,opTeu:0,eirTeu:0,pols:[]};
+                        if(!delMap[dd.del]) delMap[dd.del]={teu:0,grossTon:0,opTeu:0,eirTeu:0,pols:[],ft20:0,ft40:0};
                         delMap[dd.del].teu+=dd.teu;
                         delMap[dd.del].grossTon+=dd.grossTon;
                         delMap[dd.del].opTeu+=(dd.opTeu||0);
                         delMap[dd.del].eirTeu+=(dd.eirTeu||0);
+                        delMap[dd.del].ft20+=(dd.ft20||0);
+                        delMap[dd.del].ft40+=(dd.ft40||0);
                         var existing=delMap[dd.del].pols.find(function(x){return x.pol===p.pol;});
                         if(!existing){
                             delMap[dd.del].pols.push({pol:p.pol,etd:p.etd,firstLane:p.firstLane,trunkLane:p.trunkLane,teu:dd.teu,ft20:dd.ft20,ft40:dd.ft40,grossTon:dd.grossTon,opTeu:dd.opTeu||0,eirTeu:dd.eirTeu||0});
@@ -447,8 +447,9 @@ function renderSummary(){
                 }
             });
         });
-        var delList=Object.entries(delMap).map(function(e){return{del:e[0],teu:e[1].teu,grossTon:e[1].grossTon,opTeu:e[1].opTeu,eirTeu:e[1].eirTeu,pols:e[1].pols};}).sort(function(a,b){return b.teu-a.teu;});
+        var delList=Object.entries(delMap).map(function(e){return{del:e[0],teu:e[1].teu,grossTon:e[1].grossTon,opTeu:e[1].opTeu,eirTeu:e[1].eirTeu,pols:e[1].pols,ft20:e[1].ft20,ft40:e[1].ft40};}).sort(function(a,b){return b.teu-a.teu;});
         delList.forEach(function(dd,i){
+            sumTeu+=dd.teu;sumGross+=dd.grossTon;sumOp+=(dd.opTeu||0);sumEir+=(dd.eirTeu||0);sum20+=(dd.ft20||0);sum40+=(dd.ft40||0);
             var pct=(d.totalTeu>0?(dd.teu/d.totalTeu*100):0).toFixed(1);
             var avgW=dd.teu>0?(dd.grossTon/dd.teu).toFixed(1):'-';
             var bw=Math.max(Math.round(parseFloat(pct)),3);
@@ -456,6 +457,8 @@ function renderSummary(){
             ph+='<td><span class="ei">&#9654;</span></td>';
             ph+='<td style="color:var(--tx5);font-weight:600;">'+(i+1)+'</td>';
             ph+='<td><span class="tag tag-pd">'+esc(dd.del)+'</span></td>';
+            ph+='<td>'+(dd.ft20||0)+'</td>';
+            ph+='<td>'+(dd.ft40||0)+'</td>';
             ph+='<td><span class="tag tag-cg">'+dd.teu+'</span></td>';
             ph+='<td>'+(dd.eirTeu>0?dd.eirTeu:'-')+'</td>';
             ph+='<td>'+(dd.opTeu>0?dd.opTeu:'-')+'</td>';
@@ -467,13 +470,14 @@ function renderSummary(){
                 dd.pols.sort(function(a,b){return b.teu-a.teu;});
                 var colSpan=11;
                 ph+='<tr class="pbd" id="zd'+esc(dd.del)+'"><td colspan="'+colSpan+'" style="padding:0;"><table style="width:100%;margin:0;border-collapse:collapse;table-layout:fixed;">';
-                ph+='<colgroup><col style="width:30px"><col><col><col style="width:50px"><col style="width:50px"><col><col><col><col><col><col></colgroup>';
+                ph+='<colgroup><col style="width:30px"><col style="width:40px"><col><col style="width:50px"><col style="width:50px"><col><col><col><col><col><col></colgroup>';
                 dd.pols.forEach(function(pp){
                     var isD=pp.firstLane===pp.trunkLane;
                     var tagCls=isD?'tag-pl':'tag-ts';
                     var ppct=Math.round(pp.teu/Math.max(dd.teu,1)*1000)/10;
                     var ppbw=Math.max(Math.round(ppct),3);
                     ph+='<tr style="background:#0c1322;">';
+                    ph+='<td></td>';
                     ph+='<td></td>';
                     ph+='<td style="padding:5px 12px;"><span class="tag '+tagCls+'" style="font-size:10.5px;">'+esc(pp.pol)+'</span></td>';
                     ph+='<td style="padding:5px 12px;">'+(pp.ft20||0)+'</td>';
@@ -492,13 +496,16 @@ function renderSummary(){
         });
     }else{
         var podMap={};
+        var sumTeu=0,sumGross=0,sumOp=0,sumEir=0,sum20=0,sum40=0;
         d.polSummary.forEach(function(p){
             p.podList.forEach(function(pd){
-                if(!podMap[pd.pod]) podMap[pd.pod]={teu:0,grossTon:0,opTeu:0,eirTeu:0,pols:[]};
+                if(!podMap[pd.pod]) podMap[pd.pod]={teu:0,grossTon:0,opTeu:0,eirTeu:0,pols:[],ft20:0,ft40:0};
                 podMap[pd.pod].teu+=pd.teu;
                 podMap[pd.pod].grossTon+=pd.grossTon;
                 podMap[pd.pod].opTeu+=(pd.opTeu||0);
                 podMap[pd.pod].eirTeu+=(pd.eirTeu||0);
+                podMap[pd.pod].ft20+=(pd.ft20||0);
+                podMap[pd.pod].ft40+=(pd.ft40||0);
                 var existing=podMap[pd.pod].pols.find(function(x){return x.pol===p.pol;});
                 if(!existing){
                     podMap[pd.pod].pols.push({pol:p.pol,etd:p.etd,firstLane:p.firstLane,trunkLane:p.trunkLane,teu:pd.teu,ft20:pd.ft20,ft40:pd.ft40,grossTon:pd.grossTon,opTeu:pd.opTeu||0,eirTeu:pd.eirTeu||0});
@@ -508,8 +515,9 @@ function renderSummary(){
                 }
             });
         });
-        var podList=Object.entries(podMap).map(function(e){return{pod:e[0],teu:e[1].teu,grossTon:e[1].grossTon,opTeu:e[1].opTeu,eirTeu:e[1].eirTeu,pols:e[1].pols};}).sort(function(a,b){return b.teu-a.teu;});
+        var podList=Object.entries(podMap).map(function(e){return{pod:e[0],teu:e[1].teu,grossTon:e[1].grossTon,opTeu:e[1].opTeu,eirTeu:e[1].eirTeu,pols:e[1].pols,ft20:e[1].ft20,ft40:e[1].ft40};}).sort(function(a,b){return b.teu-a.teu;});
         podList.forEach(function(pd,i){
+            sumTeu+=pd.teu;sumGross+=pd.grossTon;sumOp+=(pd.opTeu||0);sumEir+=(pd.eirTeu||0);sum20+=(pd.ft20||0);sum40+=(pd.ft40||0);
             var pct=(d.totalTeu>0?(pd.teu/d.totalTeu*100):0).toFixed(1);
             var avgW=pd.teu>0?(pd.grossTon/pd.teu).toFixed(1):'-';
             var bw=Math.max(Math.round(parseFloat(pct)),3);
@@ -517,6 +525,8 @@ function renderSummary(){
             ph+='<td><span class="ei">&#9654;</span></td>';
             ph+='<td style="color:var(--tx5);font-weight:600;">'+(i+1)+'</td>';
             ph+='<td><span class="tag tag-pd">'+esc(pd.pod)+'</span></td>';
+            ph+='<td>'+(pd.ft20||0)+'</td>';
+            ph+='<td>'+(pd.ft40||0)+'</td>';
             ph+='<td><span class="tag tag-cg">'+pd.teu+'</span></td>';
             ph+='<td>'+(pd.eirTeu>0?pd.eirTeu:'-')+'</td>';
             ph+='<td>'+(pd.opTeu>0?pd.opTeu:'-')+'</td>';
@@ -528,13 +538,14 @@ function renderSummary(){
                 pd.pols.sort(function(a,b){return b.teu-a.teu;});
                 var colSpan=11;
                 ph+='<tr class="pbd" id="zd'+esc(pd.pod)+'"><td colspan="'+colSpan+'" style="padding:0;"><table style="width:100%;margin:0;border-collapse:collapse;table-layout:fixed;">';
-                ph+='<colgroup><col style="width:30px"><col><col><col style="width:50px"><col style="width:50px"><col><col><col><col><col><col></colgroup>';
+                ph+='<colgroup><col style="width:30px"><col style="width:40px"><col><col style="width:50px"><col style="width:50px"><col><col><col><col><col><col></colgroup>';
                 pd.pols.forEach(function(pp){
                     var isD=pp.firstLane===pp.trunkLane;
                     var tagCls=isD?'tag-pl':'tag-ts';
                     var ppct=Math.round(pp.teu/Math.max(pd.teu,1)*1000)/10;
                     var ppbw=Math.max(Math.round(ppct),3);
                     ph+='<tr style="background:#0c1322;">';
+                    ph+='<td></td>';
                     ph+='<td></td>';
                     ph+='<td style="padding:5px 12px;"><span class="tag '+tagCls+'" style="font-size:10.5px;">'+esc(pp.pol)+'</span></td>';
                     ph+='<td style="padding:5px 12px;">'+(pp.ft20||0)+'</td>';
@@ -552,6 +563,10 @@ function renderSummary(){
             }
         });
     }
+    var sumAvgW=sumTeu>0?(sumGross/sumTeu).toFixed(1):'-';
+    ph+='<tr class="tr"><td></td><td colspan="2" style="text-align:right;padding-right:12px;color:var(--tx4);font-weight:400;">合计</td>';
+    ph+='<td>'+sum20+'</td><td>'+sum40+'</td>';
+    ph+='<td><span class="tag tag-cg">'+sumTeu+'</span></td><td>'+(sumEir>0?sumEir:'-')+'</td><td>'+(sumOp>0?sumOp:'-')+'</td><td>'+fmt(sumGross)+'</td><td>'+sumAvgW+'</td><td></td></tr>';
     ptb.innerHTML=ph;
 }
 
@@ -651,8 +666,13 @@ function dq(){
                     var podKey=p.pol+'_'+pd.pod;
                     var hasDel=pd.delList&&pd.delList.length>0;
                     var showExpand=hasDel&&(pd.delList.length>1||pd.delList[0].del!==pd.pod);
-                    h+='<tr'+(showExpand?' class="pr" id="dr_'+podKey+'" onclick="tpodDel(\''+podKey+'\')':'')+' style="background:#0c1322;">';
-                    h+='<td>'+(showExpand?'<span class="ei">&#9654;</span>':'')+'</td>';
+                    if(showExpand){
+                        h+='<tr class="pr" id="dr_'+podKey+'" onclick="tpodDel(\''+podKey+'\')" style="background:#0c1322;">';
+                        h+='<td><span class="ei">&#9654;</span></td>';
+                    }else{
+                        h+='<tr style="background:#0c1322;">';
+                        h+='<td></td>';
+                    }
                     h+='<td></td>';
                     h+='<td style="padding:5px 12px;"><span class="tag tag-pd" style="font-size:10.5px;">'+esc(pd.pod)+'</span></td>';
                     h+='<td style="padding:5px 12px;">'+(pd.ft20||0)+'</td>';
