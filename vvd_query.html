@@ -430,23 +430,26 @@ function renderSummary(){
             p.podList.forEach(function(pd){
                 if(pd.delList){
                     pd.delList.forEach(function(dd){
-                        if(!delMap[dd.del]) delMap[dd.del]={teu:0,grossTon:0,opTeu:0,eirTeu:0,pols:[]};
+                        if(!delMap[dd.del]) delMap[dd.del]={teu:0,grossTon:0,opTeu:0,eirTeu:0,ft20:0,ft40:0,pols:[]};
                         delMap[dd.del].teu+=dd.teu;
                         delMap[dd.del].grossTon+=dd.grossTon;
                         delMap[dd.del].opTeu+=(dd.opTeu||0);
                         delMap[dd.del].eirTeu+=(dd.eirTeu||0);
+                        delMap[dd.del].ft20+=(dd.ft20||0);
+                        delMap[dd.del].ft40+=(dd.ft40||0);
                         var existing=delMap[dd.del].pols.find(function(x){return x.pol===p.pol;});
                         if(!existing){
                             delMap[dd.del].pols.push({pol:p.pol,etd:p.etd,firstLane:p.firstLane,trunkLane:p.trunkLane,teu:dd.teu,ft20:dd.ft20,ft40:dd.ft40,grossTon:dd.grossTon,opTeu:dd.opTeu||0,eirTeu:dd.eirTeu||0});
                         }else{
                             existing.teu+=dd.teu;existing.ft20+=dd.ft20;existing.ft40+=dd.ft40;
                             existing.grossTon+=dd.grossTon;existing.opTeu+=(dd.opTeu||0);existing.eirTeu+=(dd.eirTeu||0);
+                            existing.ft20+=(dd.ft20||0);existing.ft40+=(dd.ft40||0);
                         }
                     });
                 }
             });
         });
-        var delList=Object.entries(delMap).map(function(e){return{del:e[0],teu:e[1].teu,grossTon:e[1].grossTon,opTeu:e[1].opTeu,eirTeu:e[1].eirTeu,pols:e[1].pols};}).sort(function(a,b){return b.teu-a.teu;});
+        var delList=Object.entries(delMap).map(function(e){return{del:e[0],teu:e[1].teu,grossTon:e[1].grossTon,opTeu:e[1].opTeu,eirTeu:e[1].eirTeu,ft20:e[1].ft20,ft40:e[1].ft40,pols:e[1].pols};}).sort(function(a,b){return b.teu-a.teu;});
         delList.forEach(function(dd,i){
             var pct=(d.totalTeu>0?(dd.teu/d.totalTeu*100):0).toFixed(1);
             var avgW=dd.teu>0?(dd.grossTon/dd.teu).toFixed(1):'-';
@@ -455,6 +458,8 @@ function renderSummary(){
             ph+='<td><span class="ei">&#9654;</span></td>';
             ph+='<td style="color:var(--tx5);font-weight:600;">'+(i+1)+'</td>';
             ph+='<td><span class="tag tag-pd">'+esc(dd.del)+'</span></td>';
+            ph+='<td>'+(dd.ft20||0)+'</td>';
+            ph+='<td>'+(dd.ft40||0)+'</td>';
             ph+='<td><span class="tag tag-cg">'+dd.teu+'</span></td>';
             ph+='<td>'+(dd.eirTeu>0?dd.eirTeu:'-')+'</td>';
             ph+='<td>'+(dd.opTeu>0?dd.opTeu:'-')+'</td>';
@@ -466,13 +471,14 @@ function renderSummary(){
                 dd.pols.sort(function(a,b){return b.teu-a.teu;});
                 var colSpan=11;
                 ph+='<tr class="pbd" id="zd'+esc(dd.del)+'"><td colspan="'+colSpan+'" style="padding:0;"><table style="width:100%;margin:0;border-collapse:collapse;table-layout:fixed;">';
-                ph+='<colgroup><col style="width:30px"><col><col><col style="width:50px"><col style="width:50px"><col><col><col><col><col><col></colgroup>';
+                ph+='<colgroup><col style="width:30px"><col style="width:40px"><col><col style="width:50px"><col style="width:50px"><col><col><col><col><col><col></colgroup>';
                 dd.pols.forEach(function(pp){
                     var isD=pp.firstLane===pp.trunkLane;
                     var tagCls=isD?'tag-pl':'tag-ts';
                     var ppct=Math.round(pp.teu/Math.max(dd.teu,1)*1000)/10;
                     var ppbw=Math.max(Math.round(ppct),3);
                     ph+='<tr style="background:#0c1322;">';
+                    ph+='<td></td>';
                     ph+='<td></td>';
                     ph+='<td style="padding:5px 12px;"><span class="tag '+tagCls+'" style="font-size:10.5px;">'+esc(pp.pol)+'</span></td>';
                     ph+='<td style="padding:5px 12px;">'+(pp.ft20||0)+'</td>';
@@ -493,11 +499,13 @@ function renderSummary(){
         var podMap={};
         d.polSummary.forEach(function(p){
             p.podList.forEach(function(pd){
-                if(!podMap[pd.pod]) podMap[pd.pod]={teu:0,grossTon:0,opTeu:0,eirTeu:0,pols:[]};
+                if(!podMap[pd.pod]) podMap[pd.pod]={teu:0,grossTon:0,opTeu:0,eirTeu:0,ft20:0,ft40:0,pols:[]};
                 podMap[pd.pod].teu+=pd.teu;
                 podMap[pd.pod].grossTon+=pd.grossTon;
                 podMap[pd.pod].opTeu+=(pd.opTeu||0);
                 podMap[pd.pod].eirTeu+=(pd.eirTeu||0);
+                podMap[pd.pod].ft20+=(pd.ft20||0);
+                podMap[pd.pod].ft40+=(pd.ft40||0);
                 var existing=podMap[pd.pod].pols.find(function(x){return x.pol===p.pol;});
                 if(!existing){
                     podMap[pd.pod].pols.push({pol:p.pol,etd:p.etd,firstLane:p.firstLane,trunkLane:p.trunkLane,teu:pd.teu,ft20:pd.ft20,ft40:pd.ft40,grossTon:pd.grossTon,opTeu:pd.opTeu||0,eirTeu:pd.eirTeu||0});
@@ -507,7 +515,7 @@ function renderSummary(){
                 }
             });
         });
-        var podList=Object.entries(podMap).map(function(e){return{pod:e[0],teu:e[1].teu,grossTon:e[1].grossTon,opTeu:e[1].opTeu,eirTeu:e[1].eirTeu,pols:e[1].pols};}).sort(function(a,b){return b.teu-a.teu;});
+        var podList=Object.entries(podMap).map(function(e){return{pod:e[0],teu:e[1].teu,grossTon:e[1].grossTon,opTeu:e[1].opTeu,eirTeu:e[1].eirTeu,ft20:e[1].ft20,ft40:e[1].ft40,pols:e[1].pols};}).sort(function(a,b){return b.teu-a.teu;});
         podList.forEach(function(pd,i){
             var pct=(d.totalTeu>0?(pd.teu/d.totalTeu*100):0).toFixed(1);
             var avgW=pd.teu>0?(pd.grossTon/pd.teu).toFixed(1):'-';
@@ -516,6 +524,8 @@ function renderSummary(){
             ph+='<td><span class="ei">&#9654;</span></td>';
             ph+='<td style="color:var(--tx5);font-weight:600;">'+(i+1)+'</td>';
             ph+='<td><span class="tag tag-pd">'+esc(pd.pod)+'</span></td>';
+            ph+='<td>'+(pd.ft20||0)+'</td>';
+            ph+='<td>'+(pd.ft40||0)+'</td>';
             ph+='<td><span class="tag tag-cg">'+pd.teu+'</span></td>';
             ph+='<td>'+(pd.eirTeu>0?pd.eirTeu:'-')+'</td>';
             ph+='<td>'+(pd.opTeu>0?pd.opTeu:'-')+'</td>';
@@ -527,13 +537,14 @@ function renderSummary(){
                 pd.pols.sort(function(a,b){return b.teu-a.teu;});
                 var colSpan=11;
                 ph+='<tr class="pbd" id="zd'+esc(pd.pod)+'"><td colspan="'+colSpan+'" style="padding:0;"><table style="width:100%;margin:0;border-collapse:collapse;table-layout:fixed;">';
-                ph+='<colgroup><col style="width:30px"><col><col><col style="width:50px"><col style="width:50px"><col><col><col><col><col><col></colgroup>';
+                ph+='<colgroup><col style="width:30px"><col style="width:40px"><col><col style="width:50px"><col style="width:50px"><col><col><col><col><col><col></colgroup>';
                 pd.pols.forEach(function(pp){
                     var isD=pp.firstLane===pp.trunkLane;
                     var tagCls=isD?'tag-pl':'tag-ts';
                     var ppct=Math.round(pp.teu/Math.max(pd.teu,1)*1000)/10;
                     var ppbw=Math.max(Math.round(ppct),3);
                     ph+='<tr style="background:#0c1322;">';
+                    ph+='<td></td>';
                     ph+='<td></td>';
                     ph+='<td style="padding:5px 12px;"><span class="tag '+tagCls+'" style="font-size:10.5px;">'+esc(pp.pol)+'</span></td>';
                     ph+='<td style="padding:5px 12px;">'+(pp.ft20||0)+'</td>';
