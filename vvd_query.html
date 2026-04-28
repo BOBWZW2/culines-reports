@@ -97,6 +97,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-s
 .btn-exp{padding:7px 14px;background:var(--exp-btn);color:var(--exp-btn-t);border:1px solid var(--exp-btn-b);border-radius:6px;font-size:13px;cursor:pointer;transition:background .15s}
 .btn-exp:hover{filter:brightness(1.2)}
 
+.sheet-btn{padding:8px 20px;font-size:13px;font-weight:600;background:transparent;color:var(--tx4);border:none;cursor:pointer;transition:all .2s}
+.sheet-btn.active{background:var(--ac);color:#fff}
+.sheet-btn:not(.active):hover{background:var(--hv);color:var(--tx2)}
+
 .twrap{overflow-x:auto;max-height:650px;overflow-y:auto}
 table{width:100%;border-collapse:collapse;font-size:14px}
 thead{background:var(--bg);position:sticky;top:0;z-index:10;transition:background .3s}
@@ -176,25 +180,24 @@ td{padding:9px 12px;border-bottom:1px solid var(--bd2);color:var(--tx3)}
 </div>
 </div>
 <div class="tcard">
-<div class="thdr"><h3>📋 POL 货量汇总（点击展开 POD）</h3> <button class="btn-exp" onclick="ex()">📥 导出 CSV</button></div>
-<div class="twrap">
-<table style="table-layout:fixed;" id="mainTbl"><colgroup><col style="width:15px"><col style="width:9%"><col style="width:9%"><col style="width:7%"><col style="width:7%"><col style="width:9%"><col style="width:9%"><col style="width:9%"><col style="width:10%"><col style="width:9%"><col style="width:12%"></colgroup><thead><tr><th></th><th>POL</th><th>ETD</th><th>20'</th><th>40'</th><th>货量 TEU</th><th>EIR</th><th>提柜 OP</th><th>总重 Ton</th><th>均重 T/TEU</th><th id="thLane1">FIRST LANE</th></tr></thead>
-<tbody id="rb"></tbody>
-</table>
+<div class="thdr">
+<div style="display:flex;align-items:center;gap:12px;flex:1;">
+<div id="summaryTypeToggle" style="display:inline-flex;border:1px solid var(--bd);border-radius:8px;overflow:hidden;">
+<button class="sheet-btn active" id="btnPolView" onclick="switchSummaryType('pol')" style="padding:8px 20px;font-size:13px;font-weight:600;background:var(--ac);color:#fff;border:none;cursor:pointer;">POL 货量汇总</button>
+<button class="sheet-btn" id="btnPodDelView" onclick="switchSummaryType('podDel')" style="padding:8px 20px;font-size:13px;font-weight:600;background:transparent;color:var(--tx4);border:none;cursor:pointer;border-left:1px solid var(--bd);">POD/DEL 货量汇总</button>
 </div>
 </div>
-<div class="tcard" id="podCard" style="display:none;">
-<div class="thdr"><h3>📋 POD/DEL 货量汇总</h3>
 <div style="display:flex;align-items:center;gap:8px;">
-<div id="viewToggle" style="display:inline-flex;border:1px solid var(--bd);border-radius:6px;overflow:hidden;">
-<button class="toggle-btn active" id="btnPod" onclick="switchView('pod')" style="padding:5px 12px;font-size:12px;background:var(--ac);color:#fff;border:none;cursor:pointer;">POD</button>
+<div id="viewToggle" style="display:none;inline-flex;border:1px solid var(--bd);border-radius:6px;overflow:hidden;">
+<button class="toggle-btn" id="btnPod" onclick="switchView('pod')" style="padding:5px 12px;font-size:12px;background:var(--ac);color:#fff;border:none;cursor:pointer;">POD</button>
 <button class="toggle-btn" id="btnDel" onclick="switchView('del')" style="padding:5px 12px;font-size:12px;background:transparent;color:var(--tx4);border:none;cursor:pointer;border-left:1px solid var(--bd);">DEL</button>
 </div>
+<button class="btn-exp" onclick="ex()">📥 导出 CSV</button>
 </div>
 </div>
 <div class="twrap">
-<table style="table-layout:fixed;" id="podTbl"><colgroup><col style="width:15px"><col style="width:10%"><col style="width:7%"><col style="width:7%"><col style="width:10%"><col style="width:9%"><col style="width:9%"><col style="width:10%"><col style="width:9%"><col style="width:9%"></colgroup><thead><tr><th></th><th id="summaryLabel">POD</th><th>20'</th><th>40'</th><th>货量 TEU</th><th>EIR</th><th>提柜 OP</th><th>总重 Ton</th><th>均重 T/TEU</th><th>占比</th></tr></thead>
-<tbody id="pb"></tbody>
+<table style="table-layout:fixed;" id="mainTbl"><colgroup><col style="width:15px"><col style="width:9%"><col style="width:9%"><col style="width:7%"><col style="width:7%"><col style="width:9%"><col style="width:9%"><col style="width:9%"><col style="width:10%"><col style="width:9%"><col style="width:12%"></colgroup><thead id="mainThead"><tr><th></th><th>POL</th><th>ETD</th><th>20'</th><th>40'</th><th>货量 TEU</th><th>EIR</th><th>提柜 OP</th><th>总重 Ton</th><th>均重 T/TEU</th><th id="thLane1">FIRST LANE</th></tr></thead>
+<tbody id="rb"></tbody>
 </table>
 </div>
 </div>
@@ -213,6 +216,7 @@ let epod = new Set();
 let edel = new Set();
 let _pageETag = null;
 let _updateChecked = false;
+let _summaryType = 'pol';
 let _summaryView = 'pod';
 
 // ===== Lane / VVD autocomplete =====
@@ -402,6 +406,23 @@ function tpodDel(key){
     else{edel.add(key);r.classList.add('exp');d.classList.add('show');}
 }
 
+function switchSummaryType(type){
+    _summaryType=type;
+    var bp=document.getElementById('btnPolView'),bd=document.getElementById('btnPodDelView');
+    var vt=document.getElementById('viewToggle');
+    if(type==='pol'){
+        bp.classList.add('active');bp.style.background='var(--ac)';bp.style.color='#fff';
+        bd.classList.remove('active');bd.style.background='transparent';bd.style.color='var(--tx4)';
+        vt.style.display='none';
+    }else{
+        bd.classList.add('active');bd.style.background='var(--ac)';bd.style.color='#fff';
+        bp.classList.remove('active');bp.style.background='transparent';bp.style.color='var(--tx4)';
+        vt.style.display='inline-flex';
+    }
+    ep.clear();epod.clear();edel.clear();
+    renderSummary();
+}
+
 function switchView(view){
     _summaryView=view;
     var bd=document.getElementById('btnDel'),bp=document.getElementById('btnPod');
@@ -415,150 +436,257 @@ function switchView(view){
         bd.style.background='transparent';bd.style.color='var(--tx4)';
         lbl.textContent='POD';
     }
+    epod.clear();edel.clear();
     renderSummary();
 }
 
 function renderSummary(){
     var d=DB.vvds[curVVD];
     if(!d)return;
-    var ptb=document.getElementById('pb');
+    var tb=document.getElementById('rb');
+    var thead=document.getElementById('mainThead');
     epod.clear();edel.clear();
     var ph='';
-    if(_summaryView==='del'){
-        var delMap={};
-        d.polSummary.forEach(function(p){
-            p.podList.forEach(function(pd){
-                if(pd.delList){
-                    pd.delList.forEach(function(dd){
-                        if(!delMap[dd.del]) delMap[dd.del]={teu:0,ft20:0,ft40:0,grossTon:0,opTeu:0,eirTeu:0,pols:[]};
-                        delMap[dd.del].teu+=dd.teu;
-                        delMap[dd.del].ft20+=dd.ft20||0;
-                        delMap[dd.del].ft40+=dd.ft40||0;
-                        delMap[dd.del].grossTon+=dd.grossTon;
-                        delMap[dd.del].opTeu+=(dd.opTeu||0);
-                        delMap[dd.del].eirTeu+=(dd.eirTeu||0);
-                        var existing=delMap[dd.del].pols.find(function(x){return x.pol===p.pol;});
-                        if(!existing){
-                            delMap[dd.del].pols.push({pol:p.pol,etd:p.etd,firstLane:p.firstLane,trunkLane:p.trunkLane,teu:dd.teu,ft20:dd.ft20,ft40:dd.ft40,grossTon:dd.grossTon,opTeu:dd.opTeu||0,eirTeu:dd.eirTeu||0});
-                        }else{
-                            existing.teu+=dd.teu;existing.ft20+=dd.ft20;existing.ft40+=dd.ft40;
-                            existing.grossTon+=dd.grossTon;existing.opTeu+=(dd.opTeu||0);existing.eirTeu+=(dd.eirTeu||0);
+    
+    if(_summaryType==='pol'){
+        thead.innerHTML='<tr><th></th><th>POL</th><th>ETD</th><th>20\'</th><th>40\'</th><th>货量 TEU</th><th>EIR</th><th>提柜 OP</th><th>总重 Ton</th><th>均重 T/TEU</th><th id="thLane1">FIRST LANE</th></tr>';
+        
+        var di=[],ts=[];
+        d.polSummary.forEach(function(p,idx){p._i=idx;if(p.firstLane===p.trunkLane)di.push(p);else ts.push(p);});
+        di.sort(function(a,b){var ea=a.etd||'',eb=b.etd||'';return ea<eb?-1:ea>eb?1:0;});
+        ts.sort(function(a,b){return (b.totalTeu||0)-(a.totalTeu||0);});
+
+        function rg(lbl,items){
+            if(!items.length)return'';
+            var isDirect=(lbl==='Direct');
+            var tc=isDirect?'rgba(34,197,94,.2)':'rgba(168,85,247,.2)';
+            var fc=isDirect?'#86efac':'#d8b4fe';
+            var gt=0,gw=0,g20=0,g40=0,gop=0,geir=0;
+            items.forEach(function(p){gt+=p.totalTeu;gw+=p.totalGrossTon;g20+=p.total20ft;g40+=p.total40ft;gop+=p.opTeu||0;geir+=p.eirTeu||0;});
+            var h='<tr class="gs" style="background:'+tc.replace(')','.08')+');">';
+            h+='<td></td><td colspan="2" style="padding:8px 12px;color:'+fc+';font-weight:600;font-size:11.5px;">';
+            h+='<span class="tag" style="background:'+tc+';color:'+fc+';">'+lbl+'</span> 小计 ('+items.length+' POL)</td>';
+            h+='<td>'+g20+'</td><td>'+g40+'</td>';
+            h+='<td><span class="tag tag-cg">'+gt+'</span></td>';
+            h+='<td>'+(geir>0?geir:'-')+'</td><td>'+(gop>0?gop:'-')+'</td>';
+            h+='<td>'+fmt(gw)+'</td><td>'+(gt>0?(gw/gt).toFixed(1):'-')+'</td><td></td></tr>';
+            var polTagClass=isDirect?'tag-pl':'tag-ts';
+            items.forEach(function(p){
+                var idx=p._i;
+                h+='<tr class="pr" id="i'+idx+'" onclick="tp('+idx+')">';
+                h+='<td><span class="ei">&#9654;</span></td>';
+                h+='<td><span class="tag '+polTagClass+'">'+esc(p.pol)+'</span></td>';
+                h+='<td>'+(p.etd||'-')+'</td>';
+                h+='<td>'+(p.total20ft||0)+'</td>';
+                h+='<td>'+(p.total40ft||0)+'</td>';
+                h+='<td><span class="tag tag-cg">'+p.totalTeu+'</span></td>';
+                h+='<td>'+(p.eirTeu>0?p.eirTeu:'-')+'</td>';
+                h+='<td>'+(p.opTeu>0?p.opTeu:'-')+'</td>';
+                h+='<td>'+fmt(p.totalGrossTon)+'</td>';
+                h+='<td>'+(p.totalTeu>0?(p.totalGrossTon/p.totalTeu).toFixed(1):'-')+'</td>';
+                h+='<td><span class="tag tag-ln">'+esc(p.firstLane)+'</span></td>';
+                h+='</tr>';
+                if(p.podList.length){
+                    var pc=11;
+                    h+='<tr class="pbd" id="p'+idx+'"><td colspan="'+pc+'" style="padding:0;"><table style="width:100%;margin:0;border-collapse:collapse;table-layout:fixed;">';
+                    h+='<colgroup><col style="width:15px"><col style="width:9%"><col style="width:9%"><col style="width:7%"><col style="width:7%"><col style="width:9%"><col style="width:9%"><col style="width:9%"><col style="width:10%"><col style="width:9%"><col style="width:12%"></colgroup>';
+                    p.podList.forEach(function(pd){
+                        var pct=Math.round(pd.teu/Math.max(p.totalTeu,1)*1000)/10;
+                        var bw=Math.max(Math.round(pct),3);
+                        var avgW=pd.teu>0?(pd.grossTon/pd.teu).toFixed(1):'-';
+                        var podKey=p.pol+'__'+pd.pod;
+                        var hasDel=pd.delList&&pd.delList.length>0;
+                        var showExpand=hasDel&&(pd.delList.length>1||pd.delList[0].del!==pd.pod);
+                        h+='<tr'+(showExpand?' class="pr" id="dr_'+podKey+'" onclick="tpodDel(\''+podKey+'\')':'')+' style="background:#0c1322;">';
+                        h+='<td>'+(showExpand?'<span class="ei">&#9654;</span>':'')+'</td>';
+                        h+='<td style="padding:5px 12px;"><span class="tag tag-pd" style="font-size:10.5px;">'+esc(pd.pod)+'</span></td>';
+                        h+='<td style="padding:5px 12px;"></td>';
+                        h+='<td style="padding:5px 12px;">'+(pd.ft20||0)+'</td>';
+                        h+='<td style="padding:5px 12px;">'+(pd.ft40||0)+'</td>';
+                        h+='<td style="padding:5px 12px;"><span class="tag tag-cg" style="font-size:11px;">'+pd.teu+'</span></td>';
+                        h+='<td style="padding:5px 12px;">'+(pd.eirTeu>0?pd.eirTeu:'-')+'</td>';
+                        h+='<td style="padding:5px 12px;">'+(pd.opTeu>0?pd.opTeu:'-')+'</td>';
+                        h+='<td style="padding:5px 12px;">'+fmt(pd.grossTon)+'</td>';
+                        h+='<td style="padding:5px 12px;">'+avgW+'</td>';
+                        h+='<td style="padding:5px 12px;">';
+                        h+='<span style="display:inline-flex;align-items:center;gap:4px;"><span class="pb" style="width:'+bw+'px;height:14px;"><span class="pbfill"></span></span><span class="pbt">'+pct+'%</span></span>';
+                        h+='</td></tr>';
+                        if(showExpand){
+                            var delColSpan=11;
+                            h+='<tr class="pbd" id="dd_'+podKey+'"><td colspan="'+delColSpan+'" style="padding:0;"><table style="width:100%;margin:0;border-collapse:collapse;table-layout:fixed;">';
+                            h+='<colgroup><col style="width:15px"><col style="width:9%"><col style="width:9%"><col style="width:7%"><col style="width:7%"><col style="width:9%"><col style="width:9%"><col style="width:9%"><col style="width:10%"><col style="width:9%"><col style="width:12%"></colgroup>';
+                            pd.delList.forEach(function(dd){
+                                var dAvgW=dd.teu>0?(dd.grossTon/dd.teu).toFixed(1):'-';
+                                h+='<tr style="background:#0c1322;">';
+                                h+='<td></td>';
+                                h+='<td style="padding:4px 12px 4px 24px;"><span class="tag tag-dt" style="font-size:10px;">'+esc(dd.del)+'</span></td>';
+                                h+='<td style="padding:4px 12px;"></td>';
+                                h+='<td style="padding:4px 12px;">'+(dd.ft20||0)+'</td>';
+                                h+='<td style="padding:4px 12px;">'+(dd.ft40||0)+'</td>';
+                                h+='<td style="padding:4px 12px;"><span class="tag tag-cg" style="font-size:11px;">'+dd.teu+'</span></td>';
+                                h+='<td style="padding:4px 12px;">'+(dd.eirTeu>0?dd.eirTeu:'-')+'</td>';
+                                h+='<td style="padding:4px 12px;">'+(dd.opTeu>0?dd.opTeu:'-')+'</td>';
+                                h+='<td style="padding:4px 12px;">'+fmt(dd.grossTon)+'</td>';
+                                h+='<td style="padding:4px 12px;">'+dAvgW+'</td>';
+                                h+='<td style="padding:4px 12px;color:var(--tx6);font-size:12px;">-</td>';
+                                h+='</tr>';
+                            });
+                            h+='</table></td></tr>';
                         }
                     });
+                    h+='</table></td></tr>';
                 }
             });
-        });
-        var delList=Object.entries(delMap).map(function(e){return{del:e[0],teu:e[1].teu,ft20:e[1].ft20,ft40:e[1].ft40,grossTon:e[1].grossTon,opTeu:e[1].opTeu,eirTeu:e[1].eirTeu,pols:e[1].pols};}).sort(function(a,b){return b.teu-a.teu;});
-        delList.forEach(function(dd,i){
-            var pct=(d.totalTeu>0?(dd.teu/d.totalTeu*100):0).toFixed(1);
-            var avgW=dd.teu>0?(dd.grossTon/dd.teu).toFixed(1):'-';
-            var bw=Math.max(Math.round(parseFloat(pct)),3);
-            ph+='<tr class="pr" id="z'+esc(dd.del)+'" onclick="tpod(\''+esc(dd.del)+'\')">';
-            ph+='<td><span class="ei">&#9654;</span></td>';
-            ph+='<td><span class="tag tag-pd">'+esc(dd.del)+'</span></td>';
-            ph+='<td>'+(dd.ft20||0)+'</td>';
-            ph+='<td>'+(dd.ft40||0)+'</td>';
-            ph+='<td><span class="tag tag-cg">'+dd.teu+'</span></td>';
-            ph+='<td>'+(dd.eirTeu>0?dd.eirTeu:'-')+'</td>';
-            ph+='<td>'+(dd.opTeu>0?dd.opTeu:'-')+'</td>';
-            ph+='<td>'+fmt(dd.grossTon)+'</td>';
-            ph+='<td>'+avgW+'</td>';
-            ph+='<td><span style="display:inline-flex;align-items:center;gap:4px;"><span class="pb" style="width:'+bw+'px;height:14px;"><span class="pbfill"></span></span><span class="pbt">'+pct+'%</span></span></td>';
-            ph+='</tr>';
-            if(dd.pols.length>0){
-                dd.pols.sort(function(a,b){return b.teu-a.teu;});
-                var colSpan=10;
-                ph+='<tr class="pbd" id="zd'+esc(dd.del)+'"><td colspan="'+colSpan+'" style="padding:0;"><table style="width:100%;margin:0;border-collapse:collapse;table-layout:fixed;">';
-                ph+='<colgroup><col style="width:15px"><col style="width:10%"><col style="width:7%"><col style="width:7%"><col style="width:10%"><col style="width:9%"><col style="width:9%"><col style="width:10%"><col style="width:9%"><col style="width:9%"></colgroup>';
-                dd.pols.forEach(function(pp){
-                    var isD=pp.firstLane===pp.trunkLane;
-                    var tagCls=isD?'tag-pl':'tag-ts';
-                    var ppct=Math.round(pp.teu/Math.max(dd.teu,1)*1000)/10;
-                    var ppbw=Math.max(Math.round(ppct),3);
-                    ph+='<tr style="background:#0c1322;">';
-                    ph+='<td></td>';
-                    ph+='<td style="padding:5px 12px;"><span class="tag '+tagCls+'" style="font-size:10.5px;">'+esc(pp.pol)+'</span></td>';
-                    ph+='<td style="padding:5px 12px;">'+(pp.ft20||0)+'</td>';
-                    ph+='<td style="padding:5px 12px;">'+(pp.ft40||0)+'</td>';
-                    ph+='<td style="padding:5px 12px;"><span class="tag tag-cg" style="font-size:11px;">'+pp.teu+'</span></td>';
-                    ph+='<td style="padding:5px 12px;">'+(pp.eirTeu>0?pp.eirTeu:'-')+'</td>';
-                    ph+='<td style="padding:5px 12px;">'+(pp.opTeu>0?pp.opTeu:'-')+'</td>';
-                    ph+='<td style="padding:5px 12px;">'+fmt(pp.grossTon)+'</td>';
-                    ph+='<td style="padding:5px 12px;">'+(pp.teu>0?(pp.grossTon/pp.teu).toFixed(1):'-')+'</td>';
-                    ph+='<td style="padding:5px 12px;">';
-                    ph+='<span style="display:inline-flex;align-items:center;gap:4px;"><span class="pb" style="width:'+ppbw+'px;height:14px;"><span class="pbfill"></span></span><span class="pbt">'+ppct+'%</span></span>';
-                    ph+='</td></tr>';
-                });
-                ph+='</table></td></tr>';
-            }
-        });
+            return h;
+        }
+
+        var totalOp=0,totalEir=0;
+        d.polSummary.forEach(function(p){totalOp+=p.opTeu||0;totalEir+=p.eirTeu||0;});
+        ph=rg('Direct',di)+rg('T/S',ts)+
+            '<tr class="tr"><td></td><td style="text-align:right;padding-right:12px;color:var(--tx4);font-weight:400;">合计</td>'+
+            '<td style="padding:9px 12px;"></td>'+
+            '<td>'+(d.total20ft||0)+'</td><td>'+(d.total40ft||0)+'</td>'+
+            '<td><span class="tag tag-cg">'+d.totalTeu+'</span></td><td>'+(totalEir>0?totalEir:'-')+'</td><td>'+(totalOp>0?totalOp:'-')+'</td><td>'+fmt(d.totalGrossTon)+'</td><td>'+(d.totalTeu>0?(d.totalGrossTon/d.totalTeu).toFixed(1):'-')+'</td><td></td></tr>';
     }else{
-        var podMap={};
-        d.polSummary.forEach(function(p){
-            p.podList.forEach(function(pd){
-                if(!podMap[pd.pod]) podMap[pd.pod]={teu:0,ft20:0,ft40:0,grossTon:0,opTeu:0,eirTeu:0,pols:[]};
-                podMap[pd.pod].teu+=pd.teu;
-                podMap[pd.pod].ft20+=pd.ft20||0;
-                podMap[pd.pod].ft40+=pd.ft40||0;
-                podMap[pd.pod].grossTon+=pd.grossTon;
-                podMap[pd.pod].opTeu+=(pd.opTeu||0);
-                podMap[pd.pod].eirTeu+=(pd.eirTeu||0);
-                var existing=podMap[pd.pod].pols.find(function(x){return x.pol===p.pol;});
-                if(!existing){
-                    podMap[pd.pod].pols.push({pol:p.pol,etd:p.etd,firstLane:p.firstLane,trunkLane:p.trunkLane,teu:pd.teu,ft20:pd.ft20,ft40:pd.ft40,grossTon:pd.grossTon,opTeu:pd.opTeu||0,eirTeu:pd.eirTeu||0});
-                }else{
-                    existing.teu+=pd.teu;existing.ft20+=pd.ft20;existing.ft40+=pd.ft40;
-                    existing.grossTon+=pd.grossTon;existing.opTeu+=(pd.opTeu||0);existing.eirTeu+=(pd.eirTeu||0);
+        thead.innerHTML='<tr><th></th><th id="summaryLabel">POD</th><th>20\'</th><th>40\'</th><th>货量 TEU</th><th>EIR</th><th>提柜 OP</th><th>总重 Ton</th><th>均重 T/TEU</th><th>占比</th></tr>';
+        
+        if(_summaryView==='del'){
+            var delMap={};
+            d.polSummary.forEach(function(p){
+                p.podList.forEach(function(pd){
+                    if(pd.delList){
+                        pd.delList.forEach(function(dd){
+                            if(!delMap[dd.del]) delMap[dd.del]={teu:0,ft20:0,ft40:0,grossTon:0,opTeu:0,eirTeu:0,pols:[]};
+                            delMap[dd.del].teu+=dd.teu;
+                            delMap[dd.del].ft20+=dd.ft20||0;
+                            delMap[dd.del].ft40+=dd.ft40||0;
+                            delMap[dd.del].grossTon+=dd.grossTon;
+                            delMap[dd.del].opTeu+=(dd.opTeu||0);
+                            delMap[dd.del].eirTeu+=(dd.eirTeu||0);
+                            var existing=delMap[dd.del].pols.find(function(x){return x.pol===p.pol;});
+                            if(!existing){
+                                delMap[dd.del].pols.push({pol:p.pol,etd:p.etd,firstLane:p.firstLane,trunkLane:p.trunkLane,teu:dd.teu,ft20:dd.ft20,ft40:dd.ft40,grossTon:dd.grossTon,opTeu:dd.opTeu||0,eirTeu:dd.eirTeu||0});
+                            }else{
+                                existing.teu+=dd.teu;existing.ft20+=dd.ft20;existing.ft40+=dd.ft40;
+                                existing.grossTon+=dd.grossTon;existing.opTeu+=(dd.opTeu||0);existing.eirTeu+=(dd.eirTeu||0);
+                            }
+                        });
+                    }
+                });
+            });
+            var delList=Object.entries(delMap).map(function(e){return{del:e[0],teu:e[1].teu,ft20:e[1].ft20,ft40:e[1].ft40,grossTon:e[1].grossTon,opTeu:e[1].opTeu,eirTeu:e[1].eirTeu,pols:e[1].pols};}).sort(function(a,b){return b.teu-a.teu;});
+            delList.forEach(function(dd,i){
+                var pct=(d.totalTeu>0?(dd.teu/d.totalTeu*100):0).toFixed(1);
+                var avgW=dd.teu>0?(dd.grossTon/dd.teu).toFixed(1):'-';
+                var bw=Math.max(Math.round(parseFloat(pct)),3);
+                ph+='<tr class="pr" id="z'+esc(dd.del)+'" onclick="tpod(\''+esc(dd.del)+'\')">';
+                ph+='<td><span class="ei">&#9654;</span></td>';
+                ph+='<td><span class="tag tag-pd">'+esc(dd.del)+'</span></td>';
+                ph+='<td>'+(dd.ft20||0)+'</td>';
+                ph+='<td>'+(dd.ft40||0)+'</td>';
+                ph+='<td><span class="tag tag-cg">'+dd.teu+'</span></td>';
+                ph+='<td>'+(dd.eirTeu>0?dd.eirTeu:'-')+'</td>';
+                ph+='<td>'+(dd.opTeu>0?dd.opTeu:'-')+'</td>';
+                ph+='<td>'+fmt(dd.grossTon)+'</td>';
+                ph+='<td>'+avgW+'</td>';
+                ph+='<td><span style="display:inline-flex;align-items:center;gap:4px;"><span class="pb" style="width:'+bw+'px;height:14px;"><span class="pbfill"></span></span><span class="pbt">'+pct+'%</span></span></td>';
+                ph+='</tr>';
+                if(dd.pols.length>0){
+                    dd.pols.sort(function(a,b){return b.teu-a.teu;});
+                    var colSpan=10;
+                    ph+='<tr class="pbd" id="zd'+esc(dd.del)+'"><td colspan="'+colSpan+'" style="padding:0;"><table style="width:100%;margin:0;border-collapse:collapse;table-layout:fixed;">';
+                    ph+='<colgroup><col style="width:10px"><col style="width:11%"><col style="width:11%"><col style="width:11%"><col style="width:11%"><col style="width:10%"><col style="width:10%"><col style="width:10%"><col style="width:8%"><col style="width:8%"></colgroup>';
+                    dd.pols.forEach(function(pp){
+                        var isD=pp.firstLane===pp.trunkLane;
+                        var tagCls=isD?'tag-pl':'tag-ts';
+                        var ppct=Math.round(pp.teu/Math.max(dd.teu,1)*1000)/10;
+                        var ppbw=Math.max(Math.round(ppct),3);
+                        ph+='<tr style="background:#0c1322;">';
+                        ph+='<td></td>';
+                        ph+='<td style="padding:5px 12px;"><span class="tag '+tagCls+'" style="font-size:10.5px;">'+esc(pp.pol)+'</span></td>';
+                        ph+='<td style="padding:5px 12px;">'+(pp.ft20||0)+'</td>';
+                        ph+='<td style="padding:5px 12px;">'+(pp.ft40||0)+'</td>';
+                        ph+='<td style="padding:5px 12px;"><span class="tag tag-cg" style="font-size:11px;">'+pp.teu+'</span></td>';
+                        ph+='<td style="padding:5px 12px;">'+(pp.eirTeu>0?pp.eirTeu:'-')+'</td>';
+                        ph+='<td style="padding:5px 12px;">'+(pp.opTeu>0?pp.opTeu:'-')+'</td>';
+                        ph+='<td style="padding:5px 12px;">'+fmt(pp.grossTon)+'</td>';
+                        ph+='<td style="padding:5px 12px;">'+(pp.teu>0?(pp.grossTon/pp.teu).toFixed(1):'-')+'</td>';
+                        ph+='<td style="padding:5px 12px;">';
+                        ph+='<span style="display:inline-flex;align-items:center;gap:4px;"><span class="pb" style="width:'+ppbw+'px;height:14px;"><span class="pbfill"></span></span><span class="pbt">'+ppct+'%</span></span>';
+                        ph+='</td></tr>';
+                    });
+                    ph+='</table></td></tr>';
                 }
             });
-        });
-        var podList=Object.entries(podMap).map(function(e){return{pod:e[0],teu:e[1].teu,ft20:e[1].ft20,ft40:e[1].ft40,grossTon:e[1].grossTon,opTeu:e[1].opTeu,eirTeu:e[1].eirTeu,pols:e[1].pols};}).sort(function(a,b){return b.teu-a.teu;});
-        podList.forEach(function(pd,i){
-            var pct=(d.totalTeu>0?(pd.teu/d.totalTeu*100):0).toFixed(1);
-            var avgW=pd.teu>0?(pd.grossTon/pd.teu).toFixed(1):'-';
-            var bw=Math.max(Math.round(parseFloat(pct)),3);
-            ph+='<tr class="pr" id="z'+esc(pd.pod)+'" onclick="tpod(\''+esc(pd.pod)+'\')">';
-            ph+='<td><span class="ei">&#9654;</span></td>';
-            ph+='<td><span class="tag tag-pd">'+esc(pd.pod)+'</span></td>';
-            ph+='<td>'+(pd.ft20||0)+'</td>';
-            ph+='<td>'+(pd.ft40||0)+'</td>';
-            ph+='<td><span class="tag tag-cg">'+pd.teu+'</span></td>';
-            ph+='<td>'+(pd.eirTeu>0?pd.eirTeu:'-')+'</td>';
-            ph+='<td>'+(pd.opTeu>0?pd.opTeu:'-')+'</td>';
-            ph+='<td>'+fmt(pd.grossTon)+'</td>';
-            ph+='<td>'+avgW+'</td>';
-            ph+='<td><span style="display:inline-flex;align-items:center;gap:4px;"><span class="pb" style="width:'+bw+'px;height:14px;"><span class="pbfill"></span></span><span class="pbt">'+pct+'%</span></span></td>';
-            ph+='</tr>';
-            if(pd.pols.length>0){
-                pd.pols.sort(function(a,b){return b.teu-a.teu;});
-                var colSpan=10;
-                ph+='<tr class="pbd" id="zd'+esc(pd.pod)+'"><td colspan="'+colSpan+'" style="padding:0;"><table style="width:100%;margin:0;border-collapse:collapse;table-layout:fixed;">';
-                ph+='<colgroup><col style="width:15px"><col style="width:10%"><col style="width:7%"><col style="width:7%"><col style="width:10%"><col style="width:9%"><col style="width:9%"><col style="width:10%"><col style="width:9%"><col style="width:9%"></colgroup>';
-                pd.pols.forEach(function(pp){
-                    var isD=pp.firstLane===pp.trunkLane;
-                    var tagCls=isD?'tag-pl':'tag-ts';
-                    var ppct=Math.round(pp.teu/Math.max(pd.teu,1)*1000)/10;
-                    var ppbw=Math.max(Math.round(ppct),3);
-                    ph+='<tr style="background:#0c1322;">';
-                    ph+='<td></td>';
-                    ph+='<td style="padding:5px 12px;"><span class="tag '+tagCls+'" style="font-size:10.5px;">'+esc(pp.pol)+'</span></td>';
-                    ph+='<td style="padding:5px 12px;">'+(pp.ft20||0)+'</td>';
-                    ph+='<td style="padding:5px 12px;">'+(pp.ft40||0)+'</td>';
-                    ph+='<td style="padding:5px 12px;"><span class="tag tag-cg" style="font-size:11px;">'+pp.teu+'</span></td>';
-                    ph+='<td style="padding:5px 12px;">'+(pp.eirTeu>0?pp.eirTeu:'-')+'</td>';
-                    ph+='<td style="padding:5px 12px;">'+(pp.opTeu>0?pp.opTeu:'-')+'</td>';
-                    ph+='<td style="padding:5px 12px;">'+fmt(pp.grossTon)+'</td>';
-                    ph+='<td style="padding:5px 12px;">'+(pp.teu>0?(pp.grossTon/pp.teu).toFixed(1):'-')+'</td>';
-                    ph+='<td style="padding:5px 12px;">';
-                    ph+='<span style="display:inline-flex;align-items:center;gap:4px;"><span class="pb" style="width:'+ppbw+'px;height:14px;"><span class="pbfill"></span></span><span class="pbt">'+ppct+'%</span></span>';
-                    ph+='</td></tr>';
+        }else{
+            var podMap={};
+            d.polSummary.forEach(function(p){
+                p.podList.forEach(function(pd){
+                    if(!podMap[pd.pod]) podMap[pd.pod]={teu:0,ft20:0,ft40:0,grossTon:0,opTeu:0,eirTeu:0,pols:[]};
+                    podMap[pd.pod].teu+=pd.teu;
+                    podMap[pd.pod].ft20+=pd.ft20||0;
+                    podMap[pd.pod].ft40+=pd.ft40||0;
+                    podMap[pd.pod].grossTon+=pd.grossTon;
+                    podMap[pd.pod].opTeu+=(pd.opTeu||0);
+                    podMap[pd.pod].eirTeu+=(pd.eirTeu||0);
+                    var existing=podMap[pd.pod].pols.find(function(x){return x.pol===p.pol;});
+                    if(!existing){
+                        podMap[pd.pod].pols.push({pol:p.pol,etd:p.etd,firstLane:p.firstLane,trunkLane:p.trunkLane,teu:pd.teu,ft20:pd.ft20,ft40:pd.ft40,grossTon:pd.grossTon,opTeu:pd.opTeu||0,eirTeu:pd.eirTeu||0});
+                    }else{
+                        existing.teu+=pd.teu;existing.ft20+=pd.ft20;existing.ft40+=pd.ft40;
+                        existing.grossTon+=pd.grossTon;existing.opTeu+=(pd.opTeu||0);existing.eirTeu+=(pd.eirTeu||0);
+                    }
                 });
-                ph+='</table></td></tr>';
-            }
-        });
+            });
+            var podList=Object.entries(podMap).map(function(e){return{pod:e[0],teu:e[1].teu,ft20:e[1].ft20,ft40:e[1].ft40,grossTon:e[1].grossTon,opTeu:e[1].opTeu,eirTeu:e[1].eirTeu,pols:e[1].pols};}).sort(function(a,b){return b.teu-a.teu;});
+            podList.forEach(function(pd,i){
+                var pct=(d.totalTeu>0?(pd.teu/d.totalTeu*100):0).toFixed(1);
+                var avgW=pd.teu>0?(pd.grossTon/pd.teu).toFixed(1):'-';
+                var bw=Math.max(Math.round(parseFloat(pct)),3);
+                ph+='<tr class="pr" id="z'+esc(pd.pod)+'" onclick="tpod(\''+esc(pd.pod)+'\')">';
+                ph+='<td><span class="ei">&#9654;</span></td>';
+                ph+='<td><span class="tag tag-pd">'+esc(pd.pod)+'</span></td>';
+                ph+='<td>'+(pd.ft20||0)+'</td>';
+                ph+='<td>'+(pd.ft40||0)+'</td>';
+                ph+='<td><span class="tag tag-cg">'+pd.teu+'</span></td>';
+                ph+='<td>'+(pd.eirTeu>0?pd.eirTeu:'-')+'</td>';
+                ph+='<td>'+(pd.opTeu>0?pd.opTeu:'-')+'</td>';
+                ph+='<td>'+fmt(pd.grossTon)+'</td>';
+                ph+='<td>'+avgW+'</td>';
+                ph+='<td><span style="display:inline-flex;align-items:center;gap:4px;"><span class="pb" style="width:'+bw+'px;height:14px;"><span class="pbfill"></span></span><span class="pbt">'+pct+'%</span></span></td>';
+                ph+='</tr>';
+                if(pd.pols.length>0){
+                    pd.pols.sort(function(a,b){return b.teu-a.teu;});
+                    var colSpan=10;
+                    ph+='<tr class="pbd" id="zd'+esc(pd.pod)+'"><td colspan="'+colSpan+'" style="padding:0;"><table style="width:100%;margin:0;border-collapse:collapse;table-layout:fixed;">';
+                    ph+='<colgroup><col style="width:10px"><col style="width:11%"><col style="width:11%"><col style="width:11%"><col style="width:11%"><col style="width:10%"><col style="width:10%"><col style="width:10%"><col style="width:8%"><col style="width:8%"></colgroup>';
+                    pd.pols.forEach(function(pp){
+                        var isD=pp.firstLane===pp.trunkLane;
+                        var tagCls=isD?'tag-pl':'tag-ts';
+                        var ppct=Math.round(pp.teu/Math.max(pd.teu,1)*1000)/10;
+                        var ppbw=Math.max(Math.round(ppct),3);
+                        ph+='<tr style="background:#0c1322;">';
+                        ph+='<td></td>';
+                        ph+='<td style="padding:5px 12px;"><span class="tag '+tagCls+'" style="font-size:10.5px;">'+esc(pp.pol)+'</span></td>';
+                        ph+='<td style="padding:5px 12px;">'+(pp.ft20||0)+'</td>';
+                        ph+='<td style="padding:5px 12px;">'+(pp.ft40||0)+'</td>';
+                        ph+='<td style="padding:5px 12px;"><span class="tag tag-cg" style="font-size:11px;">'+pp.teu+'</span></td>';
+                        ph+='<td style="padding:5px 12px;">'+(pp.eirTeu>0?pp.eirTeu:'-')+'</td>';
+                        ph+='<td style="padding:5px 12px;">'+(pp.opTeu>0?pp.opTeu:'-')+'</td>';
+                        ph+='<td style="padding:5px 12px;">'+fmt(pp.grossTon)+'</td>';
+                        ph+='<td style="padding:5px 12px;">'+(pp.teu>0?(pp.grossTon/pp.teu).toFixed(1):'-')+'</td>';
+                        ph+='<td style="padding:5px 12px;">';
+                        ph+='<span style="display:inline-flex;align-items:center;gap:4px;"><span class="pb" style="width:'+ppbw+'px;height:14px;"><span class="pbfill"></span></span><span class="pbt">'+ppct+'%</span></span>';
+                        ph+='</td></tr>';
+                    });
+                    ph+='</table></td></tr>';
+                }
+            });
+        }
     }
-    ptb.innerHTML=ph;
+    tb.innerHTML=ph;
 }
+
 
 function dq(){
     _hideDD(_ldEl);_hideDD(_vdEl);
@@ -588,7 +716,6 @@ function dq(){
         _renderRecent();
     })();
     document.getElementById('rs').style.display='block';
-    document.getElementById('podCard').style.display='block';
     document.getElementById('es').style.display='none';
     document.getElementById('rv').textContent=inp;
     var tl=d.polSummary.length>0?d.polSummary[0].trunkLane:'-';
@@ -725,7 +852,6 @@ function cq(){
     document.getElementById('li').value='';
     _hideDD(_ldEl);_hideDD(_vdEl);
     document.getElementById('rs').style.display='none';
-    document.getElementById('podCard').style.display='none';
     document.getElementById('es').style.display='block';
     ep.clear();epod.clear();edel.clear();curVVD='';
 }
@@ -735,8 +861,21 @@ function ex(){
     var d=DB.vvds[curVVD];
     if(!d)return;
     var csv='';
-    if(_summaryView==='pod'){
-        csv='\uFEFFPOL,FIRST LANE,TRUNK LANE,POD,20ft,40ft(+40RF),TEU,EIR,提柜OP,总重(Ton),均重(T/TEU)\n';
+    if(_summaryType==='pol'){
+        csv='\uFEFFType,POL,FIRST LANE,TRUNK LANE,POD,DEL,20ft,40ft(+40RF),TEU,EIR,提柜OP,总重(Ton),均重(T/TEU)\n';
+        d.polSummary.forEach(function(p){
+            p.podList.forEach(function(pd){
+                if(pd.delList && pd.delList.length>0){
+                    pd.delList.forEach(function(dd){
+                        csv+='"POL","'+p.pol+'","'+p.firstLane+'","'+p.trunkLane+'","'+pd.pod+'","'+dd.del+'",'+(dd.ft20||0)+','+(dd.ft40||0)+','+dd.teu+','+(dd.eirTeu||0)+','+(dd.opTeu||0)+','+dd.grossTon.toFixed(1)+','+(dd.teu>0?(dd.grossTon/dd.teu).toFixed(1):'-')+'\n';
+                    });
+                } else {
+                    csv+='"POL","'+p.pol+'","'+p.firstLane+'","'+p.trunkLane+'","'+pd.pod+'","-",'+(pd.ft20||0)+','+(pd.ft40||0)+','+pd.teu+','+(pd.eirTeu||0)+','+(pd.opTeu||0)+','+pd.grossTon.toFixed(1)+','+(pd.teu>0?(pd.grossTon/pd.teu).toFixed(1):'-')+'\n';
+                }
+            });
+        });
+    }else if(_summaryView==='pod'){
+        csv='\uFEFFPOD,20ft,40ft(+40RF),TEU,EIR,提柜OP,总重(Ton),均重(T/TEU),占比\n';
         d.polSummary.forEach(function(p){
             p.podList.forEach(function(pd){
                 csv+='"'+p.pol+'","'+p.firstLane+'","'+p.trunkLane+'","'+pd.pod+'",'+(pd.ft20||0)+','+(pd.ft40||0)+','+pd.teu+','+(pd.eirTeu||0)+','+(pd.opTeu||0)+','+pd.grossTon.toFixed(1)+','+(pd.teu>0?(pd.grossTon/pd.teu).toFixed(1):'-')+'\n';
@@ -758,7 +897,7 @@ function ex(){
     }
     var blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
     var a=document.createElement('a');a.href=URL.createObjectURL(blob);
-    a.download='VVD_'+curVVD+'_'+_summaryView+'_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
+    a.download='VVD_'+curVVD+'_'+_summaryType+'_'+_summaryView+'_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
 }
 
 document.getElementById('vi').addEventListener('keydown',function(e){if(e.key==='Enter')dq();});
