@@ -396,10 +396,10 @@ function tpod(pod){
 function tpodDel(key){
     var rId='dr_'+key, dId='dd_'+key;
     var r=document.getElementById(rId),d=document.getElementById(dId);
-    if(!r||!d){console.log('[tpodDel] not found key:',key,'rId:',rId,'dId:',dId);return;}
-    console.log('[tpodDel] toggle:',key);
-    if(edel.has(key)){edel.delete(key);r.classList.remove('exp');d.classList.remove('show');}
-    else{edel.add(key);r.classList.add('exp');d.classList.add('show');}
+    if(!r){console.log('[tpodDel] row not found key:',key,'rId:',rId);return;}
+    console.log('[tpodDel] toggle:',key,'hasDelTable:',!!d);
+    if(edel.has(key)){edel.delete(key);r.classList.remove('exp');if(d)d.classList.remove('show');}
+    else{edel.add(key);r.classList.add('exp');if(d)d.classList.add('show');}
 }
 
 function switchView(view){
@@ -656,8 +656,8 @@ function dq(){
                     var podKey=p.pol+'_'+pd.pod;
                     var hasDel=pd.delList&&pd.delList.length>0;
                     var showExpand=hasDel&&(pd.delList.length>1||pd.delList[0].del!==pd.pod);
-                    h+='<tr'+(showExpand?' class="pr" id="dr_'+podKey+'" onclick="tpodDel(\''+podKey+'\')':'')+' style="background:#0c1322;">';
-                    h+='<td>'+(showExpand?'<span class="ei">&#9654;</span>':'')+'</td>';
+                    h+='<tr class="pr" id="dr_'+podKey+'" onclick="tpodDel(\''+podKey+'\')" style="background:#0c1322;">';
+                    h+='<td><span class="ei">&#9654;</span></td>';
                     h+='<td style="padding:5px 12px;"><span class="tag tag-pd" style="font-size:10.5px;">'+esc(pd.pod)+'</span></td>';
                     h+='<td style="padding:5px 12px;"></td>';
                     h+='<td style="padding:5px 12px;">'+(pd.ft20||0)+'</td>';
