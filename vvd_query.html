@@ -701,7 +701,7 @@ function dq(){
 
     var tb=document.getElementById('rb');
     tb.innerHTML=rg('Direct',di)+rg('T/S',ts)+
-        '<tr class="tr"><td></td><td style="text-align:right;padding-right:12px;color:var(--tx4);font-weight:400;">合计</td>'+
+        '<tr class="tr"><td></td><td style="text-align:right;padding-right:12px;color:var(--tx4);font-weight:400;">合计</td><td></td>'+
         '<td>'+(d.total20ft||0)+'</td><td>'+(d.total40ft||0)+'</td>'+
         '<td><span class="tag tag-cg">'+d.totalTeu+'</span></td><td>'+(totalEir>0?totalEir:'-')+'</td><td>'+(totalOp>0?totalOp:'-')+'</td><td>'+fmt(d.totalGrossTon)+'</td><td>'+(d.totalTeu>0?(d.totalGrossTon/d.totalTeu).toFixed(1):'-')+'</td><td></td></tr>';
 
