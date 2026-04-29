@@ -449,6 +449,9 @@ function renderSummary(){
     var ph='';
     
     if(_summaryType==='pol'){
+        // 恢复 POL 视图的 11 列 colgroup
+        var cg=document.getElementById('mainTbl').querySelector('colgroup');
+        cg.innerHTML='<col style="width:15px"><col style="width:9%"><col style="width:9%"><col style="width:7%"><col style="width:7%"><col style="width:9%"><col style="width:9%"><col style="width:9%"><col style="width:10%"><col style="width:9%"><col style="width:12%">';
         thead.innerHTML='<tr><th></th><th>POL</th><th>ETD</th><th>20\'</th><th>40\'</th><th>货量 TEU</th><th>EIR</th><th>提柜 OP</th><th>总重 Ton</th><th>均重 T/TEU</th><th id="thLane1">FIRST LANE</th></tr>';
         
         var di=[],ts=[];
@@ -549,6 +552,8 @@ function renderSummary(){
             '<td><span class="tag tag-cg">'+d.totalTeu+'</span></td><td>'+(totalEir>0?totalEir:'-')+'</td><td>'+(totalOp>0?totalOp:'-')+'</td><td>'+fmt(d.totalGrossTon)+'</td><td>'+(d.totalTeu>0?(d.totalGrossTon/d.totalTeu).toFixed(1):'-')+'</td><td></td></tr>';
     }else{
         thead.innerHTML='<tr><th></th><th id="summaryLabel">POD</th><th>20\'</th><th>40\'</th><th>货量 TEU</th><th>EIR</th><th>提柜 OP</th><th>总重 Ton</th><th>均重 T/TEU</th><th>占比</th></tr>';
+        var cg=document.getElementById('mainTbl').querySelector('colgroup');
+        cg.innerHTML='<col style="width:15px"><col style="width:14%"><col style="width:12%"><col style="width:11%"><col style="width:10%"><col style="width:9%"><col style="width:9%"><col style="width:9%"><col style="width:8%"><col style="width:8%">';
         
         if(_summaryView==='del'){
             var delMap={};
@@ -595,7 +600,7 @@ function renderSummary(){
                     dd.pols.sort(function(a,b){return b.teu-a.teu;});
                     var colSpan=10;
                     ph+='<tr class="pbd" id="zd'+esc(dd.del)+'"><td colspan="'+colSpan+'" style="padding:0;"><table style="width:100%;margin:0;border-collapse:collapse;table-layout:fixed;">';
-                    ph+='<colgroup><col style="width:10px"><col style="width:11%"><col style="width:11%"><col style="width:11%"><col style="width:11%"><col style="width:10%"><col style="width:10%"><col style="width:10%"><col style="width:8%"><col style="width:8%"></colgroup>';
+                    ph+='<colgroup><col style="width:10px"><col style="width:14%"><col style="width:12%"><col style="width:11%"><col style="width:10%"><col style="width:9%"><col style="width:9%"><col style="width:9%"><col style="width:8%"><col style="width:8%"></colgroup>';
                     dd.pols.forEach(function(pp){
                         var isD=pp.firstLane===pp.trunkLane;
                         var tagCls=isD?'tag-pl':'tag-ts';
@@ -659,7 +664,7 @@ function renderSummary(){
                     pd.pols.sort(function(a,b){return b.teu-a.teu;});
                     var colSpan=10;
                     ph+='<tr class="pbd" id="zd'+esc(pd.pod)+'"><td colspan="'+colSpan+'" style="padding:0;"><table style="width:100%;margin:0;border-collapse:collapse;table-layout:fixed;">';
-                    ph+='<colgroup><col style="width:10px"><col style="width:11%"><col style="width:11%"><col style="width:11%"><col style="width:11%"><col style="width:10%"><col style="width:10%"><col style="width:10%"><col style="width:8%"><col style="width:8%"></colgroup>';
+                    ph+='<colgroup><col style="width:10px"><col style="width:14%"><col style="width:12%"><col style="width:11%"><col style="width:10%"><col style="width:9%"><col style="width:9%"><col style="width:9%"><col style="width:8%"><col style="width:8%"></colgroup>';
                     pd.pols.forEach(function(pp){
                         var isD=pp.firstLane===pp.trunkLane;
                         var tagCls=isD?'tag-pl':'tag-ts';
