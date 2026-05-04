@@ -663,7 +663,7 @@ function dq(){
                     h+='<td style="padding:5px 12px;"></td>';
                     h+='<td style="padding:5px 12px;">'+(pd.ft20||0)+'</td>';
                     h+='<td style="padding:5px 12px;">'+(pd.ft40||0)+'</td>';
-                    h+='<td style="padding:5px 12px;">'+pd.teu+'</td>';
+                    h+='<td style="padding:5px 12px;"><span class="tag tag-cg" style="font-size:11px;">'+pd.teu+'</span></td>';
                     h+='<td style="padding:5px 12px;">'+(pd.eirTeu>0?pd.eirTeu:'-')+'</td>';
                     h+='<td style="padding:5px 12px;">'+(pd.opTeu>0?pd.opTeu:'-')+'</td>';
                     h+='<td style="padding:5px 12px;">'+fmt(pd.grossTon)+'</td>';
@@ -682,7 +682,7 @@ function dq(){
                             h+='<td style="padding:4px 12px 4px 28px;" colspan="2"><span class="tag tag-dt" style="font-size:10px;">'+esc(dd.del)+'</span></td>';
                             h+='<td style="padding:4px 12px;">'+(dd.ft20||0)+'</td>';
                             h+='<td style="padding:4px 12px;">'+(dd.ft40||0)+'</td>';
-                            h+='<td style="padding:4px 12px;">'+dd.teu+'</td>';
+                            h+='<td style="padding:4px 12px;"><span class="tag tag-cg" style="font-size:10px;">'+dd.teu+'</span></td>';
                             h+='<td style="padding:4px 12px;">'+(dd.eirTeu>0?dd.eirTeu:'-')+'</td>';
                             h+='<td style="padding:4px 12px;">'+(dd.opTeu>0?dd.opTeu:'-')+'</td>';
                             h+='<td style="padding:4px 12px;">'+fmt(dd.grossTon)+'</td>';
