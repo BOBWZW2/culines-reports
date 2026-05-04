@@ -211,6 +211,7 @@ let curVVD = '';
 let ep = new Set();
 let epod = new Set();
 let edel = new Set();
+let _delIdx = 0;
 let _pageETag = null;
 let _updateChecked = false;
 let _summaryView = 'pod';
@@ -396,8 +397,7 @@ function tpod(pod){
 function tpodDel(key){
     var rId='dr_'+key, dId='dd_'+key;
     var r=document.getElementById(rId),d=document.getElementById(dId);
-    if(!r||!d){console.log('[tpodDel] not found key:',key,'rId:',rId,'dId:',dId);return;}
-    console.log('[tpodDel] toggle:',key);
+    if(!r||!d){return;}
     if(edel.has(key)){edel.delete(key);r.classList.remove('exp');d.classList.remove('show');}
     else{edel.add(key);r.classList.add('exp');d.classList.add('show');}
 }
@@ -579,6 +579,7 @@ function dq(){
     ep.clear();
     epod.clear();
     edel.clear();
+    _delIdx=0;
     (function(){
         var h=JSON.parse(localStorage.getItem('vvd-recent')||'[]');
         h=h.filter(function(v){return v!==inp;});
@@ -653,10 +654,10 @@ function dq(){
                     var pct=Math.round(pd.teu/Math.max(p.totalTeu,1)*1000)/10;
                     var bw=Math.max(Math.round(pct),3);
                     var avgW=pd.teu>0?(pd.grossTon/pd.teu).toFixed(1):'-';
-                    var podKey=p.pol+'_'+pd.pod;
                     var hasDel=pd.delList&&pd.delList.length>0;
-                    var showExpand=hasDel&&(pd.delList.length>1||pd.delList[0].del!==pd.pod);
-                    h+='<tr'+(showExpand?' class="pr" id="dr_'+podKey+'" onclick="tpodDel(\''+podKey+'\')':'')+' style="background:#0c1322;">';
+                    var showExpand=hasDel&&(pd.delList.length>1||(pd.delList[0]&&pd.delList[0].del!==pd.pod));
+                    var delIdx=_delIdx++;
+                    h+='<tr'+(showExpand?' class="pr" id="dr_'+delIdx+'" onclick="tpodDel('+delIdx+')"':'')+ ' style="background:#0c1322;">';
                     h+='<td>'+(showExpand?'<span class="ei">&#9654;</span>':'')+'</td>';
                     h+='<td style="padding:5px 12px;"><span class="tag tag-pd" style="font-size:10.5px;">'+esc(pd.pod)+'</span></td>';
                     h+='<td style="padding:5px 12px;"></td>';
@@ -672,14 +673,13 @@ function dq(){
                     h+='</td></tr>';
                     if(showExpand){
                         var delColSpan=11;
-                        h+='<tr class="pbd" id="dd_'+podKey+'"><td colspan="'+delColSpan+'" style="padding:0;"><table style="width:100%;margin:0;border-collapse:collapse;table-layout:fixed;">';
+                        h+='<tr class="pbd" id="dd_'+delIdx+'"><td colspan="'+delColSpan+'" style="padding:0;"><table style="width:100%;margin:0;border-collapse:collapse;table-layout:fixed;">';
                         h+='<colgroup><col style="width:15px"><col style="width:9%"><col style="width:9%"><col style="width:7%"><col style="width:7%"><col style="width:9%"><col style="width:9%"><col style="width:9%"><col style="width:10%"><col style="width:9%"><col style="width:12%"></colgroup>';
                         pd.delList.forEach(function(dd){
                             var dAvgW=dd.teu>0?(dd.grossTon/dd.teu).toFixed(1):'-';
-                            h+='<tr style="background:#0c1322;">';
+                            h+='<tr style="background:#080f1c;">';
                             h+='<td></td>';
-                            h+='<td style="padding:4px 12px 4px 24px;"><span class="tag tag-dt" style="font-size:10px;">'+esc(dd.del)+'</span></td>';
-                            h+='<td style="padding:4px 12px;"></td>';
+                            h+='<td style="padding:4px 12px 4px 28px;" colspan="2"><span class="tag tag-dt" style="font-size:10px;">'+esc(dd.del)+'</span></td>';
                             h+='<td style="padding:4px 12px;">'+(dd.ft20||0)+'</td>';
                             h+='<td style="padding:4px 12px;">'+(dd.ft40||0)+'</td>';
                             h+='<td style="padding:4px 12px;">'+dd.teu+'</td>';
@@ -687,7 +687,7 @@ function dq(){
                             h+='<td style="padding:4px 12px;">'+(dd.opTeu>0?dd.opTeu:'-')+'</td>';
                             h+='<td style="padding:4px 12px;">'+fmt(dd.grossTon)+'</td>';
                             h+='<td style="padding:4px 12px;">'+dAvgW+'</td>';
-                            h+='<td style="padding:4px 12px;color:var(--tx6);font-size:12px;">-</td>';
+                            h+='<td style="padding:4px 12px;color:var(--tx6);font-size:12px;">↳ DEL</td>';
                             h+='</tr>';
                         });
                         h+='</table></td></tr>';
