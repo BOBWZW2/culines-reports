@@ -193,7 +193,7 @@ td{padding:9px 12px;border-bottom:1px solid var(--bd2);color:var(--tx3)}
 </div>
 </div>
 <div class="twrap">
-<table style="table-layout:fixed;" id="podTbl"><colgroup><col style="width:15px"><col style="width:10%"><col style="width:7%"><col style="width:7%"><col style="width:10%"><col style="width:9%"><col style="width:9%"><col style="width:10%"><col style="width:9%"><col style="width:9%"></colgroup><thead><tr><th></th><th id="summaryLabel">POD</th><th>20'</th><th>40'</th><th>货量 TEU</th><th>EIR</th><th>提柜 OP</th><th>总重 Ton</th><th>均重 T/TEU</th><th>占比</th></tr></thead>
+<table style="table-layout:fixed;" id="podTbl"><colgroup><col style="width:15px"><col style="width:7%"><col style="width:6%"><col style="width:6%"><col style="width:9%"><col style="width:7%"><col style="width:7%"><col style="width:9%"><col style="width:8%"><col style="width:12%"></colgroup><thead><tr><th></th><th id="summaryLabel">POD</th><th>20'</th><th>40'</th><th>货量 TEU</th><th>EIR</th><th>提柜 OP</th><th>总重 Ton</th><th>均重 T/TEU</th><th>占比</th></tr></thead>
 <tbody id="pb"></tbody>
 </table>
 </div>
@@ -469,7 +469,7 @@ function renderSummary(){
                 dd.pols.sort(function(a,b){return b.teu-a.teu;});
                 var colSpan=10;
                 ph+='<tr class="pbd" id="zd'+esc(dd.del)+'"><td colspan="'+colSpan+'" style="padding:0;"><table style="width:100%;margin:0;border-collapse:collapse;table-layout:fixed;">';
-                ph+='<colgroup><col style="width:15px"><col style="width:10%"><col style="width:7%"><col style="width:7%"><col style="width:10%"><col style="width:9%"><col style="width:9%"><col style="width:10%"><col style="width:9%"><col style="width:9%"></colgroup>';
+                ph+='<colgroup><col style="width:15px"><col style="width:7%"><col style="width:6%"><col style="width:6%"><col style="width:9%"><col style="width:7%"><col style="width:7%"><col style="width:9%"><col style="width:8%"><col style="width:12%"></colgroup>';
                 dd.pols.forEach(function(pp){
                     var isD=pp.firstLane===pp.trunkLane;
                     var tagCls=isD?'tag-pl':'tag-ts';
@@ -533,7 +533,7 @@ function renderSummary(){
                 pd.pols.sort(function(a,b){return b.teu-a.teu;});
                 var colSpan=10;
                 ph+='<tr class="pbd" id="zd'+esc(pd.pod)+'"><td colspan="'+colSpan+'" style="padding:0;"><table style="width:100%;margin:0;border-collapse:collapse;table-layout:fixed;">';
-                ph+='<colgroup><col style="width:15px"><col style="width:10%"><col style="width:7%"><col style="width:7%"><col style="width:10%"><col style="width:9%"><col style="width:9%"><col style="width:10%"><col style="width:9%"><col style="width:9%"></colgroup>';
+                ph+='<colgroup><col style="width:15px"><col style="width:7%"><col style="width:6%"><col style="width:6%"><col style="width:9%"><col style="width:7%"><col style="width:7%"><col style="width:9%"><col style="width:8%"><col style="width:12%"></colgroup>';
                 pd.pols.forEach(function(pp){
                     var isD=pp.firstLane===pp.trunkLane;
                     var tagCls=isD?'tag-pl':'tag-ts';
