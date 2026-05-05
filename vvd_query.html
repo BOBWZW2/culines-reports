@@ -178,7 +178,7 @@ td{padding:9px 12px;border-bottom:1px solid var(--bd2);color:var(--tx3)}
 <div class="tcard">
 <div class="thdr"><h3>📋 POL 货量汇总（点击展开 POD）</h3> <button class="btn-exp" onclick="ex()">📥 导出 CSV</button></div>
 <div class="twrap">
-<table style="table-layout:fixed;" id="mainTbl"><colgroup><col style="width:15px"><col style="width:9%"><col style="width:9%"><col style="width:7%"><col style="width:7%"><col style="width:9%"><col style="width:9%"><col style="width:9%"><col style="width:10%"><col style="width:9%"><col style="width:12%"></colgroup><thead><tr><th></th><th>POL</th><th>ETD</th><th>20'</th><th>40'</th><th>货量 TEU</th><th>EIR</th><th>提柜 OP</th><th>总重 Ton</th><th>均重 T/TEU</th><th id="thLane1">FIRST LANE</th></tr></thead>
+<table style="table-layout:fixed;" id="mainTbl"><colgroup><col style="width:3%"><col style="width:9%"><col style="width:9%"><col style="width:7%"><col style="width:7%"><col style="width:9%"><col style="width:9%"><col style="width:9%"><col style="width:10%"><col style="width:9%"><col style="width:12%"></colgroup><thead><tr><th></th><th>POL</th><th>ETD</th><th>20'</th><th>40'</th><th>货量 TEU</th><th>EIR</th><th>提柜 OP</th><th>总重 Ton</th><th>均重 T/TEU</th><th id="thLane1">FIRST LANE</th></tr></thead>
 <tbody id="rb"></tbody>
 </table>
 </div>
@@ -193,7 +193,7 @@ td{padding:9px 12px;border-bottom:1px solid var(--bd2);color:var(--tx3)}
 </div>
 </div>
 <div class="twrap">
-<table style="table-layout:fixed;" id="podTbl"><colgroup><col style="width:15px"><col style="width:10%"><col style="width:7%"><col style="width:7%"><col style="width:10%"><col style="width:9%"><col style="width:9%"><col style="width:10%"><col style="width:9%"><col style="width:9%"></colgroup><thead><tr><th></th><th id="summaryLabel">POD</th><th>20'</th><th>40'</th><th>货量 TEU</th><th>EIR</th><th>提柜 OP</th><th>总重 Ton</th><th>均重 T/TEU</th><th>占比</th></tr></thead>
+<table style="table-layout:fixed;" id="podTbl"><colgroup><col style="width:3%"><col style="width:10%"><col style="width:7%"><col style="width:7%"><col style="width:10%"><col style="width:9%"><col style="width:9%"><col style="width:10%"><col style="width:9%"><col style="width:9%"></colgroup><thead><tr><th></th><th id="summaryLabel">POD</th><th>20'</th><th>40'</th><th>货量 TEU</th><th>EIR</th><th>提柜 OP</th><th>总重 Ton</th><th>均重 T/TEU</th><th>占比</th></tr></thead>
 <tbody id="pb"></tbody>
 </table>
 </div>
@@ -211,6 +211,7 @@ let curVVD = '';
 let ep = new Set();
 let epod = new Set();
 let edel = new Set();
+let _delIdx = 0;
 let _pageETag = null;
 let _updateChecked = false;
 let _summaryView = 'pod';
@@ -469,7 +470,7 @@ function renderSummary(){
                 dd.pols.sort(function(a,b){return b.teu-a.teu;});
                 var colSpan=10;
                 ph+='<tr class="pbd" id="zd'+esc(dd.del)+'"><td colspan="'+colSpan+'" style="padding:0;"><table style="width:100%;margin:0;border-collapse:collapse;table-layout:fixed;">';
-                ph+='<colgroup><col style="width:15px"><col style="width:10%"><col style="width:7%"><col style="width:7%"><col style="width:10%"><col style="width:9%"><col style="width:9%"><col style="width:10%"><col style="width:9%"><col style="width:9%"></colgroup>';
+                ph+='<colgroup><col style="width:3%"><col style="width:10%"><col style="width:7%"><col style="width:7%"><col style="width:10%"><col style="width:9%"><col style="width:9%"><col style="width:10%"><col style="width:9%"><col style="width:9%"></colgroup>';
                 dd.pols.forEach(function(pp){
                     var isD=pp.firstLane===pp.trunkLane;
                     var tagCls=isD?'tag-pl':'tag-ts';
@@ -533,7 +534,7 @@ function renderSummary(){
                 pd.pols.sort(function(a,b){return b.teu-a.teu;});
                 var colSpan=10;
                 ph+='<tr class="pbd" id="zd'+esc(pd.pod)+'"><td colspan="'+colSpan+'" style="padding:0;"><table style="width:100%;margin:0;border-collapse:collapse;table-layout:fixed;">';
-                ph+='<colgroup><col style="width:15px"><col style="width:10%"><col style="width:7%"><col style="width:7%"><col style="width:10%"><col style="width:9%"><col style="width:9%"><col style="width:10%"><col style="width:9%"><col style="width:9%"></colgroup>';
+                ph+='<colgroup><col style="width:3%"><col style="width:10%"><col style="width:7%"><col style="width:7%"><col style="width:10%"><col style="width:9%"><col style="width:9%"><col style="width:10%"><col style="width:9%"><col style="width:9%"></colgroup>';
                 pd.pols.forEach(function(pp){
                     var isD=pp.firstLane===pp.trunkLane;
                     var tagCls=isD?'tag-pl':'tag-ts';
@@ -579,6 +580,7 @@ function dq(){
     ep.clear();
     epod.clear();
     edel.clear();
+    _delIdx=0;
     (function(){
         var h=JSON.parse(localStorage.getItem('vvd-recent')||'[]');
         h=h.filter(function(v){return v!==inp;});
@@ -648,7 +650,7 @@ function dq(){
             if(p.podList.length){
                 var pc=11;
                 h+='<tr class="pbd" id="p'+idx+'"><td colspan="'+pc+'" style="padding:0;"><table style="width:100%;margin:0;border-collapse:collapse;table-layout:fixed;">';
-                h+='<colgroup><col style="width:15px"><col style="width:9%"><col style="width:9%"><col style="width:7%"><col style="width:7%"><col style="width:9%"><col style="width:9%"><col style="width:9%"><col style="width:10%"><col style="width:9%"><col style="width:12%"></colgroup>';
+                h+='<colgroup><col style="width:3%"><col style="width:9%"><col style="width:9%"><col style="width:7%"><col style="width:7%"><col style="width:9%"><col style="width:9%"><col style="width:9%"><col style="width:10%"><col style="width:9%"><col style="width:12%"></colgroup>';
                 p.podList.forEach(function(pd){
                     var pct=Math.round(pd.teu/Math.max(p.totalTeu,1)*1000)/10;
                     var bw=Math.max(Math.round(pct),3);
@@ -656,13 +658,14 @@ function dq(){
                     var podKey=p.pol+'_'+pd.pod;
                     var hasDel=pd.delList&&pd.delList.length>0;
                     var showExpand=hasDel&&(pd.delList.length>1||pd.delList[0].del!==pd.pod);
-                    h+='<tr'+(showExpand?' class="pr" id="dr_'+podKey+'" onclick="tpodDel(\''+podKey+'\')':'')+' style="background:#0c1322;">';
+                    var delIdx=_delIdx++;
+                    h+='<tr'+(showExpand?' class="pr" id="dr_'+delIdx+'" onclick="tpodDel('+delIdx+')"':'')+' style="background:#0c1322;">';
                     h+='<td>'+(showExpand?'<span class="ei">&#9654;</span>':'')+'</td>';
                     h+='<td style="padding:5px 12px;"><span class="tag tag-pd" style="font-size:10.5px;">'+esc(pd.pod)+'</span></td>';
                     h+='<td style="padding:5px 12px;"></td>';
                     h+='<td style="padding:5px 12px;">'+(pd.ft20||0)+'</td>';
                     h+='<td style="padding:5px 12px;">'+(pd.ft40||0)+'</td>';
-                    h+='<td style="padding:5px 12px;">'+pd.teu+'</td>';
+                    h+='<td style="padding:5px 12px;"><span class="tag tag-cg" style="font-size:11px;">'+pd.teu+'</span></td>';
                     h+='<td style="padding:5px 12px;">'+(pd.eirTeu>0?pd.eirTeu:'-')+'</td>';
                     h+='<td style="padding:5px 12px;">'+(pd.opTeu>0?pd.opTeu:'-')+'</td>';
                     h+='<td style="padding:5px 12px;">'+fmt(pd.grossTon)+'</td>';
@@ -672,8 +675,8 @@ function dq(){
                     h+='</td></tr>';
                     if(showExpand){
                         var delColSpan=11;
-                        h+='<tr class="pbd" id="dd_'+podKey+'"><td colspan="'+delColSpan+'" style="padding:0;"><table style="width:100%;margin:0;border-collapse:collapse;table-layout:fixed;">';
-                        h+='<colgroup><col style="width:15px"><col style="width:9%"><col style="width:9%"><col style="width:7%"><col style="width:7%"><col style="width:9%"><col style="width:9%"><col style="width:9%"><col style="width:10%"><col style="width:9%"><col style="width:12%"></colgroup>';
+                        h+='<tr class="pbd" id="dd_'+delIdx+'"><td colspan="'+delColSpan+'" style="padding:0;"><table style="width:100%;margin:0;border-collapse:collapse;table-layout:fixed;">';
+                        h+='<colgroup><col style="width:3%"><col style="width:9%"><col style="width:9%"><col style="width:7%"><col style="width:7%"><col style="width:9%"><col style="width:9%"><col style="width:9%"><col style="width:10%"><col style="width:9%"><col style="width:12%"></colgroup>';
                         pd.delList.forEach(function(dd){
                             var dAvgW=dd.teu>0?(dd.grossTon/dd.teu).toFixed(1):'-';
                             h+='<tr style="background:#0c1322;">';
@@ -682,7 +685,7 @@ function dq(){
                             h+='<td style="padding:4px 12px;"></td>';
                             h+='<td style="padding:4px 12px;">'+(dd.ft20||0)+'</td>';
                             h+='<td style="padding:4px 12px;">'+(dd.ft40||0)+'</td>';
-                            h+='<td style="padding:4px 12px;">'+dd.teu+'</td>';
+                            h+='<td style="padding:4px 12px;"><span class="tag tag-cg" style="font-size:10px;">'+dd.teu+'</span></td>';
                             h+='<td style="padding:4px 12px;">'+(dd.eirTeu>0?dd.eirTeu:'-')+'</td>';
                             h+='<td style="padding:4px 12px;">'+(dd.opTeu>0?dd.opTeu:'-')+'</td>';
                             h+='<td style="padding:4px 12px;">'+fmt(dd.grossTon)+'</td>';
@@ -702,6 +705,7 @@ function dq(){
     var tb=document.getElementById('rb');
     tb.innerHTML=rg('Direct',di)+rg('T/S',ts)+
         '<tr class="tr"><td></td><td style="text-align:right;padding-right:12px;color:var(--tx4);font-weight:400;">合计</td>'+
+        '<td></td>'+
         '<td>'+(d.total20ft||0)+'</td><td>'+(d.total40ft||0)+'</td>'+
         '<td><span class="tag tag-cg">'+d.totalTeu+'</span></td><td>'+(totalEir>0?totalEir:'-')+'</td><td>'+(totalOp>0?totalOp:'-')+'</td><td>'+fmt(d.totalGrossTon)+'</td><td>'+(d.totalTeu>0?(d.totalGrossTon/d.totalTeu).toFixed(1):'-')+'</td><td></td></tr>';
 
