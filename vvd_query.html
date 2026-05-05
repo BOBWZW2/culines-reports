@@ -188,15 +188,12 @@ td{padding:9px 12px;border-bottom:1px solid var(--bd2);color:var(--tx3)}
 </div>
 </div>
 <div class="tcard" id="podCard" style="display:none;">
-<div class="thdr"><h3>📋 POD/DEL 货量汇总</h3>
-<div style="display:flex;align-items:center;gap:8px;">
+<div class="thdr"><h3 style="display:flex;align-items:center;gap:8px;">📋 POD/DEL 货量汇总
 <div id="viewToggle" style="display:inline-flex;border:1px solid var(--bd);border-radius:6px;overflow:hidden;">
 <button class="toggle-btn active" id="btnPod" onclick="switchView('pod')" style="padding:5px 12px;font-size:12px;background:var(--ac);color:#fff;border:none;cursor:pointer;">POD</button>
 <button class="toggle-btn" id="btnDel" onclick="switchView('del')" style="padding:5px 12px;font-size:12px;background:transparent;color:var(--tx4);border:none;cursor:pointer;border-left:1px solid var(--bd);">DEL</button>
 </div>
-<button class="btn-exp" onclick="ex()">📥 导出 CSV</button>
-</div>
-</div>
+</h3> <button class="btn-exp" onclick="ex()">📥 导出 CSV</button></div>
 <div class="twrap">
 <table style="table-layout:fixed;" id="podTbl"><colgroup><col style="width:3%"><col style="width:10%"><col style="width:7%"><col style="width:7%"><col style="width:10%"><col style="width:9%"><col style="width:9%"><col style="width:10%"><col style="width:9%"><col style="width:9%"></colgroup><thead><tr><th></th><th id="summaryLabel">POD</th><th>20'</th><th>40'</th><th>货量 TEU</th><th>EIR</th><th>提柜 OP</th><th>总重 Ton</th><th>均重 T/TEU</th><th>占比</th></tr></thead>
 <tbody id="pb"></tbody>
