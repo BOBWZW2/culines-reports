@@ -175,7 +175,11 @@ td{padding:9px 12px;border-bottom:1px solid var(--bd2);color:var(--tx3)}
 <div class="stat"><div class="lbl">提柜 OP</div><div class="val" id="sop">-</div></div>
 </div>
 </div>
-<div class="tcard">
+<div id="mainToggle" style="display:flex;gap:0;margin-bottom:16px;border:1px solid var(--bd);border-radius:8px;overflow:hidden;width:fit-content;">
+<button id="btnPolMain" onclick="switchMainView('pol')" style="padding:7px 16px;font-size:13px;font-weight:600;background:var(--ac);color:#fff;border:none;cursor:pointer;">POL 汇总</button>
+<button id="btnPodDelMain" onclick="switchMainView('poddel')" style="padding:7px 16px;font-size:13px;font-weight:600;background:transparent;color:var(--tx4);border:none;cursor:pointer;border-left:1px solid var(--bd);">POD/DEL 汇总</button>
+</div>
+<div class="tcard" id="polCard">
 <div class="thdr"><h3>📋 POL 货量汇总（点击展开 POD）</h3> <button class="btn-exp" onclick="ex()">📥 导出 CSV</button></div>
 <div class="twrap">
 <table style="table-layout:fixed;" id="mainTbl"><colgroup><col style="width:3%"><col style="width:9%"><col style="width:9%"><col style="width:7%"><col style="width:7%"><col style="width:9%"><col style="width:9%"><col style="width:9%"><col style="width:10%"><col style="width:9%"><col style="width:12%"></colgroup><thead><tr><th></th><th>POL</th><th>ETD</th><th>20'</th><th>40'</th><th>货量 TEU</th><th>EIR</th><th>提柜 OP</th><th>总重 Ton</th><th>均重 T/TEU</th><th id="thLane1">FIRST LANE</th></tr></thead>
@@ -190,6 +194,7 @@ td{padding:9px 12px;border-bottom:1px solid var(--bd2);color:var(--tx3)}
 <button class="toggle-btn active" id="btnPod" onclick="switchView('pod')" style="padding:5px 12px;font-size:12px;background:var(--ac);color:#fff;border:none;cursor:pointer;">POD</button>
 <button class="toggle-btn" id="btnDel" onclick="switchView('del')" style="padding:5px 12px;font-size:12px;background:transparent;color:var(--tx4);border:none;cursor:pointer;border-left:1px solid var(--bd);">DEL</button>
 </div>
+<button class="btn-exp" onclick="ex()">📥 导出 CSV</button>
 </div>
 </div>
 <div class="twrap">
@@ -214,6 +219,7 @@ let edel = new Set();
 let _delIdx = 0;
 let _pageETag = null;
 let _updateChecked = false;
+let _mainView = 'pol';
 let _summaryView = 'pod';
 
 // ===== Lane / VVD autocomplete =====
@@ -419,6 +425,25 @@ function switchView(view){
     renderSummary();
 }
 
+function switchMainView(view){
+    _mainView = view;
+    var btnPol = document.getElementById('btnPolMain');
+    var btnPodDel = document.getElementById('btnPodDelMain');
+    var polCard = document.getElementById('polCard');
+    var podCard = document.getElementById('podCard');
+    if(view === 'poddel'){
+        btnPodDel.style.background = 'var(--ac)'; btnPodDel.style.color = '#fff';
+        btnPol.style.background = 'transparent'; btnPol.style.color = 'var(--tx4)';
+        polCard.style.display = 'none';
+        podCard.style.display = 'block';
+    } else {
+        btnPol.style.background = 'var(--ac)'; btnPol.style.color = '#fff';
+        btnPodDel.style.background = 'transparent'; btnPodDel.style.color = 'var(--tx4)';
+        polCard.style.display = 'block';
+        podCard.style.display = 'none';
+    }
+}
+
 function renderSummary(){
     var d=DB.vvds[curVVD];
     if(!d)return;
@@ -590,7 +615,7 @@ function dq(){
         _renderRecent();
     })();
     document.getElementById('rs').style.display='block';
-    document.getElementById('podCard').style.display='block';
+    switchMainView('pol');
     document.getElementById('es').style.display='none';
     document.getElementById('rv').textContent=inp;
     var tl=d.polSummary.length>0?d.polSummary[0].trunkLane:'-';
@@ -729,8 +754,8 @@ function cq(){
     document.getElementById('li').value='';
     _hideDD(_ldEl);_hideDD(_vdEl);
     document.getElementById('rs').style.display='none';
-    document.getElementById('podCard').style.display='none';
     document.getElementById('es').style.display='block';
+    _mainView = 'pol';
     ep.clear();epod.clear();edel.clear();curVVD='';
 }
 
