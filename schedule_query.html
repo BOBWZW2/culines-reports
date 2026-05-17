@@ -182,9 +182,82 @@ td.booking-link-td{padding:4px 4px;border-right:1px solid #e2e5ed;vertical-align
 ::-webkit-scrollbar{width:6px;height:6px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:#d0d8e8;border-radius:3px}
+/* ── AI Insights Panel ── */
+.insights-toggle{position:fixed;right:0;top:140px;z-index:100;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;border:none;border-radius:8px 0 0 8px;padding:10px 14px;cursor:pointer;font-size:12px;font-weight:700;box-shadow:-2px 2px 12px rgba(99,102,241,.35);writing-mode:vertical-lr;letter-spacing:2px;transition:.25s}
+.insights-toggle:hover{padding-right:18px;box-shadow:-4px 4px 20px rgba(99,102,241,.5)}
+.insights-toggle .insights-badge{display:block;margin-top:6px;background:#fef08a;color:#422006;font-size:9px;padding:2px 5px;border-radius:4px;text-align:center;writing-mode:horizontal-tb}
+.insights-panel{position:fixed;right:-380px;top:0;width:372px;height:100vh;z-index:200;background:#fafbfc;box-shadow:-8px 0 32px rgba(0,0,0,.12);transition:right .35s cubic-bezier(.16,1,.3,1);display:flex;flex-direction:column;overflow:hidden}
+.insights-panel.open{right:0}
+.insights-header{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;padding:16px 18px;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.insights-header h3{margin:0;font-size:15px;font-weight:700}
+.insights-header .insights-close{background:none;border:none;color:rgba(255,255,255,.8);cursor:pointer;font-size:20px;line-height:1;padding:2px 6px;border-radius:4px;transition:.2s}
+.insights-header .insights-close:hover{color:#fff;background:rgba(255,255,255,.15)}
+.insights-body{flex:1;overflow-y:auto;padding:14px 16px}
+.insights-summary{background:white;border:1px solid #e2e8f0;border-radius:10px;padding:14px;margin-bottom:12px}
+.insights-summary h4{margin:0 0 10px;font-size:12.5px;color:#64748b;text-transform:uppercase;letter-spacing:.05em;display:flex;align-items:center;gap:6px}
+.insights-stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.insights-stat{background:#f8fafc;border-radius:8px;padding:10px 10px 8px;text-align:center}
+.insights-stat-value{font-size:19px;font-weight:800;color:#1e293b;line-height:1.2}
+.insights-stat-label{font-size:10px;color:#94a3b8;margin-top:3px;text-transform:uppercase;letter-spacing:.03em}
+.insights-section{margin-bottom:14px}
+.insights-section-title{font-size:11.5px;font-weight:700;color:#475569;margin-bottom:8px;display:flex;align-items:center;gap:6px;text-transform:uppercase;letter-spacing:.04em}
+.insight-card{background:white;border-radius:9px;padding:11px 13px;margin-bottom:8px;border-left:3px solid transparent;transition:.2s;cursor:pointer;border:1px solid #f1f5f9}
+.insight-card:hover{border-color:#e2e8f0;box-shadow:0 2px 8px rgba(0,0,0,.06);transform:translateX(-2px)}
+.insight-card.warn{border-left-color:#f59e0b;background:linear-gradient(135deg,#fffbeb,#fff)}
+.insight-card.danger{border-left-color:#ef4444;background:linear-gradient(135deg,#fef2f2,#fff)}
+.insight-card.success{border-left-color:#22c55e;background:linear-gradient(135deg,#f0fdf4,#fff)}
+.insight-card.info{border-left-color:#3b82f6;background:linear-gradient(135deg,#eff6ff,#fff)}
+.insight-card .insight-icon{font-size:15px;margin-right:7px;vertical-align:-2px}
+.insight-card .insight-title{font-size:12.5px;font-weight:700;color:#1e293b;margin-bottom:4px}
+.insight-card .insight-desc{font-size:11.5px;color:#64748b;line-height:1.45}
+.insight-card .insight-metric{display:inline-block;background:#f1f5f9;color:#475569;font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;margin-top:5px}
+.insight-card .insight-action{display:inline-block;font-size:10px;color:#6366f1;font-weight:600;margin-top:5px;cursor:pointer;text-decoration:underline}
+/* AI Chat stub */
+.ai-chat-area{background:white;border:1px solid #e2e8f0;border-radius:10px;margin-top:10px;overflow:hidden}
+.ai-chat-header{background:#f8fafc;padding:10px 13px;font-size:11.5px;font-weight:700;color:#475569;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;gap:6px}
+.ai-chat-messages{padding:10px 13px;max-height:180px;overflow-y:auto;min-height:60px}
+.ai-chat-msg{font-size:11.5px;color:#475569;line-height:1.5;margin-bottom:8px;padding:8px 10px;border-radius:8px;background:#f8fafc}
+.ai-chat-msg.system{background:#ede9fe;color:#5b21b6;border-left:3px solid #8b5cf6}
+.ai-chat-input-row{display:flex;gap:6px;padding:10px 13px;border-top:1px solid #e2e8f0}
+.ai-chat-input-row input{flex:1;border:1px solid #e2e8f0;border-radius:6px;padding:7px 10px;font-size:11.5px;outline:none}
+.ai-chat-input-row input:focus{border-color:#8b5cf6;box-shadow:0 0 0 2px rgba(139,92,246,.15)}
+.ai-chat-input-row button{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;border:none;border-radius:6px;padding:7px 14px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap}
+.ai-chat-input-row button:hover{opacity:.9}
+.ai-chat-input-row button:disabled{opacity:.5;cursor:not-allowed}
+@media(max-width:1100px){.insights-panel{width:320px}.insights-toggle{display:none}}
 </style>
 </head>
 <body>
+
+<!-- AI Insights Panel -->
+<button class="insights-toggle" id="insightsToggle" onclick="toggleInsights()" title="AI Insights 分析面板">
+  🤖 INSIGHTS
+  <span class="insights-badge" id="insightsBadge">0</span>
+</button>
+<div class="insights-panel" id="insightsPanel">
+  <div class="insights-header">
+    <span>🤖</span>
+    <h3>AI Insights</h3>
+    <button class="insights-close" onclick="toggleInsights()">✕</button>
+  </div>
+  <div class="insights-body" id="insightsBody">
+    <div class="insights-summary" id="insightsSummary">
+      <h4>📊 概览</h4>
+      <div class="insights-stat-grid" id="insightStats"></div>
+    </div>
+    <div id="insightsList"></div>
+    <div class="ai-chat-area" id="aiChatArea" style="display:none">
+      <div class="ai-chat-header">💬 AI 助手 <span style="font-size:9px;color:#94a3b8;font-weight:400">(API 接入预留)</span></div>
+      <div class="ai-chat-messages" id="aiChatMessages">
+        <div class="ai-chat-msg system">👋 你好！我是 AI 船期助手。当前为规则引擎模式，后续将接入 LLM API 实现自然语言对话。</div>
+      </div>
+      <div class="ai-chat-input-row">
+        <input type="text" id="aiChatInput" placeholder="输入问题，如：CUKL2613 的挂港效率如何？" onkeydown="if(event.key==='Enter')sendAiChat()">
+        <button onclick="sendAiChat()" id="aiChatBtn">发送</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- Header -->
 <div class="header">
@@ -1042,6 +1115,8 @@ function renderUnifiedView(lanesDict, searchInfo){
   _exportState = { mode: 'unified', lanesDict: lanesDict, searchInfo: searchInfo,
     highlightPorts: highlightPorts, hlTypes: hlTypes };
   document.getElementById('exportBtn').disabled = false;
+  // Auto-update Insights if panel is open or has data
+  if(_insightsPanelOpen || _insightsData){ runInsights(); }
 }
 
 // 统一视图 tab 交互：默认全显 → 点一下切单选 → 可多选叠加
@@ -1425,6 +1500,293 @@ function doExport(){
 function escAttr(s){
   return String(s||'').replace(/'/g,'&#39;').replace(/"/g,'&quot;');
 }
+
+// ═══════════════════════════════════════════════════════
+// AI INSIGHTS ENGINE — 规则分析 + API 预留
+// ═══════════════════════════════════════════════════════
+var _insightsData = null;
+var _insightsPanelOpen = false;
+
+function toggleInsights(){
+  var panel = document.getElementById('insightsPanel');
+  _insightsPanelOpen = !_insightsPanelOpen;
+  if(_insightsPanelOpen){ panel.classList.add('open'); runInsights(); }
+  else{ panel.classList.remove('open'); }
+}
+
+// ── 分析入口（查询后自动调用 / 手动触发）──
+function runInsights(){
+  var statsEl = document.getElementById('insightStats');
+  var listEl = document.getElementById('insightsList');
+  var badgeEl = document.getElementById('insightsBadge');
+
+  // 全量统计（不依赖当前搜索）
+  var allLanes = Object.keys(DB.lanes || {});
+  var totalVVDs = 0, totalPortCalls = 0;
+  var portCallCount = {};
+  var portDwellSum = {};   // port → total hours
+  var portDwellCnt = {};   // port → count
+  var lanePortMap = {};    // lane → Set of ports
+
+  allLanes.forEach(function(lane){
+    var rows = DB.lanes[lane] || [];
+    lanePortMap[lane] = new Set();
+    rows.forEach(function(row){
+      totalVVDs++;
+      if(!row.ports) return;
+      row.ports.forEach(function(p,i){
+        var port = p.port;
+        totalPortCalls++;
+        portCallCount[port] = (portCallCount[port]||0) + 1;
+        lanePortMap[lane].add(port);
+        // Dwell time: etaTs diff between consecutive ports ≈ stop duration
+        if(i < row.ports.length-1 && p.etaTs && row.ports[i+1].etaTs){
+          var dwellHrs = (row.ports[i+1].etaTs - p.etaTs) / 3600;
+          if(dwellHrs > 0 && dwellHrs < 720){ // reasonable: 0~30 days
+            portDwellSum[port] = (portDwellSum[port]||0) + dwellHrs;
+            portDwellCnt[port] = (portDwellCnt[port]||0) + 1;
+          }
+        }
+      });
+    });
+  });
+
+  var uniquePorts = Object.keys(portCallCount).length;
+  var avgPortsPerVVD = totalVVDs > 0 ? (totalPortCalls/totalVVDs).toFixed(1) : '0';
+
+  // 渲染 Summary Stats
+  statsEl.innerHTML =
+    '<div class="insights-stat"><div class="insights-stat-value">'+allLanes.length+'</div><div class="insights-stat-label">航线</div></div>'+
+    '<div class="insights-stat"><div class="insights-stat-value">'+totalVVDs+'</div><div class="insights-stat-label">航次</div></div>'+
+    '<div class="insights-stat"><div class="insights-stat-value">'+uniquePorts+'</div><div class="insights-stat-label">港口</div></div>'+
+    '<div class="insights-stat"><div class="insights-stat-value">'+avgPortsPerVVD+'</div><div class="insights-stat-label">均挂靠</div></div>';
+
+  // ── 规则引擎 ──
+  var insights = [];
+
+  // Rule 1: 低频港口（只在少数 VVD 出现，可能可 omit）
+  Object.keys(portCallCount).forEach(function(port){
+    var cnt = portCallCount[port];
+    var ratio = cnt / totalVVDs;
+    if(cnt <= 3 && totalVVDs > 50){
+      insights.push({
+        type: 'warn', icon: '⚠️',
+        title: '低频挂靠港口 — '+port,
+        desc: '仅出现在 '+cnt+' 个航次中（占比 '+((ratio*100).toFixed(1))+'%），建议评估是否需要继续停靠。',
+        metric: cnt+' VVD · '+((ratio*100).toFixed(1))+'% 覆盖率',
+        action: '查看包含 '+port+' 的航次',
+        actionData: { pol: port }
+      });
+    }
+  });
+
+  // Rule 2: 长停时港口（平均停留 > 港口整体平均的 2 倍）
+  var allDwells = Object.keys(portDwellSum).map(function(p){ return portDwellSum[p]/(portDwellCnt[p]||1); });
+  var avgDwell = allDwells.length > 0 ? allDwells.reduce(function(a,b){return a+b;},0)/allDwells.length : 0;
+  Object.keys(portDwellSum).forEach(function(port){
+    var avgH = portDwellSum[port] / (portDwellCnt[port]||1);
+    if(avgH > avgDwell * 2 && avgH > 48){
+      var dayStr = (avgH/24).toFixed(1);
+      insights.push({
+        type: 'info', icon: '⏱️',
+        title: '长停时港口 — '+port,
+        desc: '平均停时 '+dayStr+' 天，显著高于全港平均 '+((avgDwell/24).toFixed(1)+' 天。检查是否因潮水/作业效率导致。',
+        metric: avgH.toFixed(0)+'h / 次 · 均值'+(avgDwell/24).toFixed(1)+'d'
+      });
+    }
+  });
+
+  // Rule 3: 高贡献核心港口（TOP POL/POD by call frequency）
+  var sortedPorts = Object.entries(portCallCount).sort(function(a,b){ return b[1]-a[1]; });
+  sortedPorts.slice(0,5).forEach(function(entry){
+    var port = entry[0], cnt = entry[1];
+    var pct = ((cnt/totalPortCalls)*100).toFixed(1);
+    if(parseFloat(pct) > 8){
+      insights.push({
+        type: 'success', icon: '🎯',
+        title: '核心高贡献港 — '+port,
+        desc: '总挂靠 '+cnt+' 次，占全部挂靠的 '+pct+'%。该港口是航线网络的关键节点。',
+        metric: pct+' 占比 · #'+(sortedPorts.findIndex(function(e){return e[0]===port})+1)
+      });
+    }
+  });
+
+  // Rule 4: 航线港口密度差异（某些航线的港口数异常）
+  allLanes.forEach(function(lane){
+    var pcnt = lanePortMap[lane].size;
+    var laneAvg = totalPortCalls / Math.max(allLanes.length,1);
+    if(pcnt > laneAvg * 2.2 || pcnt >= 12){
+      insights.push({
+        type: 'info', icon: '🗺️',
+        title: '密集挂靠航线 — '+lane,
+        desc: '覆盖 '+pcnt+' 个港口，高于平均水平。可能为摆式航线或区域喂给。',
+        metric: pcnt+' 港口'
+      });
+    }
+  });
+
+  // Sort: danger first, then warn, info, success
+  var typeOrder = {danger:0, warn:1, info:2, success:3};
+  insights.sort(function(a,b){ return (typeOrder[a.type]||9) - (typeOrder[b.type]||9); });
+
+  // Render insight cards
+  var html = '';
+  if(insights.length === 0){
+    html = '<div style="text-center;padding:30px;color:#94a3b8"><div style="font-size:32px;margin-bottom:10px">✨</div><div>数据正常</div><div style="font-size:11px;margin-top:4px">暂无异常发现</div></div>';
+  } else {
+    html += '<div class="insights-section-title">🔍 发现 '+insights.length+' 条洞察</div>';
+    insights.forEach(function(ins, idx){
+      var cls = ins.type === 'danger' ? 'danger' : ins.type;
+      var actionHtml = ins.action ? '<div class="insight-action" onclick="_handleInsightAction('+idx+')">'+ins.action+' →</div>' : '';
+      html += '<div class="insight-card '+cls+'" id="insightCard_'+idx+'">'+
+        '<div class="insight-icon">'+ins.icon+'</div>'+
+        '<div class="insight-title">'+escHtml(ins.title)+'</div>'+
+        '<div class="insight-desc">'+escHtml(ins.desc)+'</div>'+
+        (ins.metric ? '<span class="insight-metric">'+escHtml(ins.metric)+'</span>' : '')+
+        actionHtml +
+        '</div>';
+    });
+  }
+
+  listEl.innerHTML = html;
+  badgeEl.textContent = insights.length;
+
+  // Store for action handlers
+  _insightsData = insights;
+}
+
+// Insight card click handler
+function _handleInsightAction(idx){
+  var ins = _insightsData[idx];
+  if(!ins || !ins.actionData) return;
+  if(ins.actionData.pol){
+    // Auto-fill POL and search
+    document.getElementById('polInp').value = ins.actionData.pol;
+    doSearch();
+    // Keep panel open for follow-up
+  }
+}
+
+// ── AI Chat Stub（规则引擎模式 + API 预留）──
+var _aiConfigured = false;
+var _aiEndpoint = '';  // TODO: 后续填入 LLM API endpoint
+
+function configureAiApi(endpoint){
+  _aiEndpoint = endpoint;
+  _aiConfigured = !!endpoint;
+  var chatArea = document.getElementById('aiChatArea');
+  chatArea.style.display = 'block';
+}
+
+function sendAiChat(){
+  var input = document.getElementById('aiChatInput');
+  var msg = (input.value || '').trim();
+  if(!msg) return;
+  var msgEl = document.getElementById('aiChatMessages');
+
+  // Show user message
+  msgEl.innerHTML += '<div class="ai-chat-msg" style="text-align:right;background:#eff6ff;color:#1e40af;margin-left:30px">'+escHtml(msg)+'</div>';
+  input.value = '';
+
+  // Generate response
+  setTimeout(function(){
+    var reply = _generateRuleResponse(msg);
+    msgEl.innerHTML += '<div class="ai-chat-msg system">'+reply+'</div>';
+    msgEl.scrollTop = msgEl.scrollHeight;
+  }, 300+Math.random()*400);
+}
+
+function _generateRuleResponse(question){
+  var q = question.toLowerCase();
+  var words = q.split(/\s+/);
+
+  // Keyword matching against DB
+  if(words.some(function(w){ return w.match(/^(vvd|航次|船|voyage)$/); })){
+    var vvdMatch = question.toUpperCase().match(/[A-Z]{2,4}\d{2,4}[WENS]?/);
+    if(vvdMatch){
+      var code = vvdMatch[0].replace(/[WENS]$/,'');
+      var rows = [];
+      Object.keys(DB.lanes||{}).forEach(function(lane){
+        (DB.lanes[lane]||[]).forEach(function(r){
+          if(r.vvd && r.vvd.indexOf(code) !== -1) rows.push({vvd:r.vvd, lane:lane, ports:(r.ports||[]).length});
+        });
+      });
+      if(rows.length > 0){
+        var portList = rows.map(function(r){ return r.vvd+' ('+r.lane+', '+r.ports+'港)'; }).join('；');
+        return '📋 找到 '+rows.length+' 个匹配航次：<br>'+portList+
+               '<br><br>💡 <b>提示：</b>如需详细船期，请在搜索框输入代码并点击查询。';
+      }
+      return '❓ 未找到匹配「'+code+'」的航次数据，请确认 VVD 格式正确（如 CUKL2613）。';
+    }
+  }
+
+  if(words.some(function(w){ return w.match(/^(port|港|port of loading|pol|pod|卸|装)/); })){
+    var portMatch = question.toUpperCase().match(/[A-Z]{5}/);
+    if(portMatch){
+      var port = portMatch[0];
+      var cnt = 0, lanes = new Set();
+      Object.keys(DB.lanes||{}).forEach(function(lane){
+        (DB.lanes[lane]||[]).forEach(function(r){
+          if(r.ports && r.ports.some(function(p){ return p.port===port; })){ cnt++; lanes.add(lane); }
+        });
+      });
+      if(cnt > 0){
+        return '📍 港口 <b>'+port+'</b> 数据概览：<br>'+
+               '• 总挂靠次数：<b>'+cnt+'</b> 次<br>'+
+               '• 涉及航线：<b>'+lanes.size+'</b> 条 ('+[...lanes].join(', ')+')'+
+               '<br><br>💡 在搜索框输入此港口名作为 POL 或 POD 可查看完整船期表。';
+      }
+      return '❓ 未找到港口「'+port+'」的挂靠记录。';
+    }
+  }
+
+  if(words.some(function(w){ return w.match(/^(lane|航线|service)/); })){
+    var laneNames = Object.keys(DB.lanes||{});
+    if(words.some(function(w){ return w==='list'||w==='列表'||w==='全部'; })){
+      return '📊 当前系统共 <b>'+laneNames.length+'</b> 条航线：<br>'+
+             laneNames.slice(0,15).join(', ')+(laneNames.length>15?' ... 等 '+laneNames.length+' 条':'')+
+             '<br><br>💡 输入具体航线名称可查看详情。';
+    }
+  }
+
+  if(words.some(function(w){ return w.match(/^(omit|取消|去掉|删|remove)/); })){
+    var lowPorts = [];
+    Object.keys(DB.lanes||{}).forEach(function(lane){
+      (DB.lanes[lane]||[]).forEach(function(r){
+        if(!r.ports) return;
+        r.ports.forEach(function(p){
+          // This is a simplified check — real analysis would cross-reference Booking data
+        });
+      });
+    });
+    return '🔍 <b>Omit 建议</b>（基于 Schedule 规则分析）：<br>'+
+           '当前为纯船期数据分析模式。完整的 omit 建议需要结合 Booking 货量数据进行交叉验证。<br><br>'+
+           '💡 推荐操作：在 Insights 面板中查看「低频挂靠」和「长停时」条目，这些是潜在的优化候选。<br>'+
+           '🚀 后续接入 LLM API 后将提供更智能的货量+船期联合分析。';
+  }
+
+  // Default response
+  var hints = [
+    '试试问我：「CUKL2613 的船期如何？」',
+    '试试问我：「CNSHA 港口的挂靠情况？」',
+    '试试问我：「哪些港口可以 omit？」',
+    '试试问我：「列出所有航线」'
+  ];
+  return '🤔 我理解您想了解关于「'+escHtml(question)+'」的信息。<br><br>'+
+         '当前为<strong>规则引擎模式</strong>，支持以下类型的问题：<br>'+
+         '• 🚢 VVD 船期查询（如：CUKL2613）<br>'+
+         '• 📍 港口挂靠分析（如：CNSHA）<br>'+
+         '• 🗺️ 航线列表与详情<br>'+
+         '• ✂️ Omit 建议<br><br>'+
+         hints[Math.floor(Math.random()*hints.length)];
+}
+
+// Auto-run insights on first search completion
+var _originalDoSearch = (typeof doSearch === 'function') ? doSearch : null;
+if(typeof doSearch === 'function'){
+  // We'll hook after doSearch completes via a wrapper approach in renderUnifiedView
+}
+
 </script>
 </body>
 </html>
