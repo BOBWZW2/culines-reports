@@ -671,12 +671,11 @@ function dq(){
     else fd=d.polSummary;
 
     // Compute filtered totals for stats display
-    var fTotalTeu=0,fDirectTeu=0,fTsTeu=0,fTotal20ft=0,fTotal40ft=0,fTotalGrossTon=0,fTotalOp=0,fTotalEir=0;
-    fd.forEach(function(p){fTotalTeu+=ctP(p);fDirectTeu+=p.directTeu||0;fTsTeu+=p.tsTeu||0;fTotalGrossTon+=p.totalGrossTon;fTotal20ft+=p.total20ft;fTotal40ft+=p.total40ft;fTotalOp+=p.opTeu||0;fTotalEir+=p.eirTeu||0;});
+    var fTotalTeu=0,fDirectTeu=0,fTsTeu=0,fTotal20ft=0,fTotal40ft=0,fTotalGrossTon=0,fTotalOp=0;
+    fd.forEach(function(p){fTotalTeu+=ctP(p);fDirectTeu+=p.directTeu||0;fTsTeu+=p.tsTeu||0;fTotalGrossTon+=p.totalGrossTon;fTotal20ft+=p.total20ft;fTotal40ft+=p.total40ft;fTotalOp+=p.opTeu||0;});
     document.getElementById('st').textContent=fTotalTeu;
     document.getElementById('sgw').textContent=fmt(fTotalGrossTon);
     document.getElementById('sop').textContent=fTotalOp>0?fTotalOp:'-';
-    document.getElementById('seir').textContent=fTotalEir>0?fTotalEir:'-';
     document.getElementById('sdts').innerHTML='<span style="color:#22c55e">'+fDirectTeu+'</span> / <span style="color:#f59e0b">'+fTsTeu+'</span>';
 
     var mt=0;
@@ -784,7 +783,7 @@ function dq(){
         '<tr class="tr"><td></td><td style="text-align:right;padding-right:12px;color:var(--tx4);font-weight:400;">合计</td>'+
         '<td></td>'+
         '<td>'+(fTotal20ft||0)+'</td><td>'+(fTotal40ft||0)+'</td>'+
-        '<td><span class="tag tag-cg">'+fTotalTeu+'</span></td><td>'+(fTotalEir>0?fTotalEir:'-')+'</td><td>'+(fTotalOp>0?fTotalOp:'-')+'</td><td>'+fmt(fTotalGrossTon)+'</td><td>'+(fTotalTeu>0?(fTotalGrossTon/fTotalTeu).toFixed(1):'-')+'</td><td></td></tr>';
+        '<td><span class="tag tag-cg">'+fTotalTeu+'</span></td><td>'+(fTotalOp>0?fTotalOp:'-')+'</td><td>'+fmt(fTotalGrossTon)+'</td><td>'+(fTotalTeu>0?(fTotalGrossTon/fTotalTeu).toFixed(1):'-')+'</td><td></td></tr>';
 
     renderSummary();
 }
