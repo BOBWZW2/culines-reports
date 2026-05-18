@@ -145,7 +145,7 @@ td{padding:9px 12px;border-bottom:1px solid var(--bd2);color:var(--tx3)}
 <div class="header">
 <h1><span class="logo">🚢</span> VVD Booking Query</h1>
 <div class="subtitle">输入航次代码查询 | 数据已内嵌聚合 · 无需服务器 · 即时响应 | 上次刷新 <span id="lr" style="color:var(--tx4);font-weight:600;">--</span> | 下次刷新 <span id="nr" style="color:var(--ac);font-weight:600;">--:--</span></div>
-<div class="subtitle" style="margin-top:4px;"><span style="color:var(--tag-cg-t);font-weight:600;">⚠ 注意：必须保证 Booking Route Detail 正确才能反映正常货量</span> <span style="color:var(--tx6);font-size:11px;">v869c6c5</span></div>
+<div class="subtitle" style="margin-top:4px;"><span style="color:var(--tag-cg-t);font-weight:600;">⚠ 注意：必须保证 Booking Route Detail 正确才能反映正常货量</span></div>
 </div>
 
 <div class="qsec">
@@ -218,24 +218,27 @@ td{padding:9px 12px;border-bottom:1px solid var(--bd2);color:var(--tx3)}
 <div class="rsec" id="es"><div class="es"><div class="ic">🔍</div><div>请输入 VVD 进行查询</div></div></div>
 
 <script>
-// ===== GLOBAL STATE =====
-var curVVD = '';
-var ep = new Set();
-var epod = new Set();
-var edel = new Set();
-var _delIdx = 0;
-var _pageETag = null;
-var _updateChecked = false;
-var _mainView = 'pol';
-var _summaryView = 'pod';
-var _cocSocFilter = 'all';
-var _laneNames = [];
-var _vvdNames = [];
-var _ldEl, _vdEl;
+// ===== PRE-AGGREGATED EMBEDDED DATA =====
 </script>
 <script src="db_data.js"></script>
-<script>_laneNames=Object.keys(DB.laneVVDs||{}).sort();_vvdNames=Object.keys(DB.vvds||{});</script>
 <script>
+// ===== END DATA =====
+
+let curVVD = '';
+let ep = new Set();
+let epod = new Set();
+let edel = new Set();
+let _delIdx = 0;
+let _pageETag = null;
+let _updateChecked = false;
+let _mainView = 'pol';
+let _summaryView = 'pod';
+let _cocSocFilter = 'all';
+
+// ===== Lane / VVD autocomplete =====
+var _laneNames = Object.keys(DB.laneVVDs || {}).sort();
+var _vvdNames = Object.keys(DB.vvds || {});
+var _ldEl, _vdEl;
 
 function _hideDD(el){ if(el) el.classList.remove('show'); }
 function _showDD(el){ if(el) el.classList.add('show'); }
@@ -881,6 +884,6 @@ window.addEventListener('message', function(e){
         window.focus();
     }
 });
-</script>
+</script></script>
 </body>
 </html>
