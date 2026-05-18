@@ -530,7 +530,7 @@ function renderSummary(){
                     ph+='<td style="padding:5px 12px;">'+fmt(pp.grossTon)+'</td>';
                     ph+='<td style="padding:5px 12px;">'+(pp.teu>0?(pp.grossTon/pp.teu).toFixed(1):'-')+'</td>';
                     ph+='<td style="padding:5px 12px;">';
-                    ph+='<span style="display:inline-flex;align-items:center;gap:4px;"><span class="pb" style="width:"+ppbw+"px;height:14px;\"><span class=\"pbfill\"></span></span><span class=\"pbt\">"+ppct+'%</span></span>';
+                    ph+='<span style="display:inline-flex;align-items:center;gap:4px;"><span class="pb" style="width:'+ppbw+'px;height:14px;"><span class="pbfill"></span></span><span class="pbt">'+ppct+'%</span></span>';
                     ph+='</td></tr>';
                 });
                 ph+='</table></td></tr>';
@@ -558,7 +558,7 @@ function renderSummary(){
         });
         var podList=Object.entries(podMap).map(function(e){return{pod:e[0],teu:e[1].teu,ft20:e[1].ft20,ft40:e[1].ft40,grossTon:e[1].grossTon,opTeu:e[1].opTeu,eirTeu:e[1].eirTeu,pols:e[1].pols};}).sort(function(a,b){return b.teu-a.teu;});
         podList.forEach(function(pd,i){
-            var pct=(fTotalTeu>0?(pd.teu/fTotalTeU*100):0).toFixed(1);
+            var pct=(fTotalTeu>0?(pd.teu/fTotalTeu*100):0).toFixed(1);
             var avgW=pd.teu>0?(pd.grossTon/pd.teu).toFixed(1):'-';
             var bw=Math.max(Math.round(parseFloat(pct)),3);
             ph+='<tr class="pr" id="z'+esc(pd.pod)+'" onclick="tpod(\''+esc(pd.pod)+'\')">';
