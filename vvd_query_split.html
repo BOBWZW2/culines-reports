@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VVD Booking Query</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0f172a;--bg2:#1e293b;--bg3:#162032;--bg4:#0c1322;
+  --bd:#334155;--bd2:#1e293b;
+  --tx:#e2e8f0;--tx2:#f1f5f9;--tx3:#cbd5e1;--tx4:#94a3b8;--tx5:#64748b;--tx6:#475569;
+  --ac:#3b82f6;--ac2:#2563eb;
+  --hb:linear-gradient(135deg,#1e293b,#0f172a);
+  --hv:rgba(59,130,246,.08);
+  --sb:#334155;
+  --tag-ln:rgba(59,130,246,.15);--tag-ln-t:#93c5fd;
+  --tag-pl:rgba(34,197,94,.15);--tag-pl-t:#86efac;
+  --tag-pd:rgba(249,115,22,.15);--tag-pd-t:#fed7aa;
+  --tag-cg:rgba(234,179,8,.15);--tag-cg-t:#fde047;
+  --tag-dt:rgba(34,197,94,.15);--tag-dt-t:#86efac;
+  --tag-ts:rgba(168,85,247,.15);--tag-ts-t:#d8b4fe;
+  --vbadge:rgba(168,85,247,.15);--vbadge-t:#d8b4fe;
+  --exp-btn:rgba(34,197,94,.1);--exp-btn-b:rgba(34,197,94,.3);--exp-btn-t:#86efac;
+  --bar-bg:rgba(249,115,22,.25);--bar-fill:linear-gradient(90deg,#f97316,#fb923c);--bar-t:#fed7aa;
+  --exp-bg:rgba(59,130,246,.06);
+}
+:root.light{
+  --bg:#f8fafc;--bg2:#ffffff;--bg3:#f1f5f9;--bg4:#e2e8f0;
+  --bd:#cbd5e1;--bd2:#e2e8f0;
+  --tx:#1e293b;--tx2:#0f172a;--tx3:#334155;--tx4:#64748b;--tx5:#94a3b8;--tx6:#94a3b8;
+  --ac:#2563eb;--ac2:#1d4ed8;
+  --hb:linear-gradient(135deg,#eff6ff,#f8fafc);
+  --hv:rgba(59,130,246,.06);
+  --sb:#cbd5e1;
+  --tag-ln:rgba(59,130,246,.1);--tag-ln-t:#2563eb;
+  --tag-pl:rgba(22,163,74,.1);--tag-pl-t:#16a34a;
+  --tag-pd:rgba(234,88,12,.1);--tag-pd-t:#ea580c;
+  --tag-cg:rgba(202,138,4,.1);--tag-cg-t:#ca8a04;
+  --tag-dt:rgba(22,163,74,.1);--tag-dt-t:#16a34a;
+  --tag-ts:rgba(147,51,234,.1);--tag-ts-t:#9333ea;
+  --vbadge:rgba(147,51,234,.1);--vbadge-t:#9333ea;
+  --exp-btn:rgba(22,163,74,.08);--exp-btn-b:rgba(22,163,74,.25);--exp-btn-t:#16a34a;
+  --bar-bg:rgba(234,88,12,.15);--bar-fill:linear-gradient(90deg,#ea580c,#f97316);--bar-t:#ea580c;
+  --exp-bg:rgba(59,130,246,.04);
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;transition:background .3s,color .3s}
+.header{background:var(--hb);border-bottom:1px solid var(--bd);padding:20px 28px;transition:background .3s,border .3s}
+.header h1{font-size:22px;font-weight:700;display:flex;align-items:center;gap:10px;color:var(--tx2)}
+.header .logo{font-size:26px}
+.header .subtitle{font-size:13px;color:var(--tx5);margin-top:3px}
+.theme-btn{position:fixed;top:20px;right:24px;background:var(--bg2);border:1px solid var(--bd);border-radius:8px;padding:6px 12px;cursor:pointer;font-size:16px;z-index:999;transition:background .3s,border .3s;line-height:1}
+.theme-btn:hover{border-color:var(--ac)}
+
+.qsec{padding:24px 28px}
+.qcard{background:var(--bg2);border:1px solid var(--bd);border-radius:12px;padding:20px;margin-bottom:16px;transition:background .3s,border .3s}
+.qrow{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap}
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:12px;color:var(--tx5);text-transform:uppercase;letter-spacing:.05em;font-weight:600}
+.field input{background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:11px 14px;color:var(--tx2);font-size:14px;width:260px;transition:background .3s,border .3s,color .3s}
+.field input:focus{outline:none;border-color:var(--ac)}
+.field input.lane-input{width:180px}
+.field .hint{font-size:12px;color:var(--tx6)}
+
+.dd-wrap{position:relative}
+.dd-list{display:none;position:absolute;top:100%;left:0;right:0;max-height:280px;overflow-y:auto;background:var(--bg2);border:1px solid var(--bd);border-radius:8px;margin-top:4px;z-index:100;box-shadow:0 8px 24px rgba(0,0,0,.2)}
+.dd-list.show{display:block}
+.dd-item{padding:8px 14px;cursor:pointer;font-size:13px;color:var(--tx4);border-bottom:1px solid var(--bd2);transition:background .15s,color .15s}
+.dd-item:hover{background:var(--bg);color:var(--tx2)}
+.dd-item:last-child{border-bottom:none}
+
+.btn-q{padding:11px 24px;background:var(--ac);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:background .15s}
+.btn-q:hover{background:var(--ac2)}
+.btn-c{padding:11px 18px;background:transparent;color:var(--tx5);border:1px solid var(--bd);border-radius:8px;font-size:14px;cursor:pointer;transition:color .15s,border .15s}
+.btn-c:hover{color:var(--tx2);border-color:var(--tx4)}
+
+.quick{margin-top:14px;padding-top:14px;border-top:1px solid var(--bd)}
+.quick-lbl{font-size:12px;color:var(--tx5);margin-bottom:8px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{padding:5px 11px;background:var(--bg);border:1px solid var(--bd);border-radius:16px;font-size:13px;color:var(--tx4);cursor:pointer;transition:border .15s,color .15s,background .3s}
+.chip:hover{border-color:var(--ac);color:var(--tx2)}
+
+.rsec{padding:0 28px 28px}
+
+.scard{background:var(--bg2);border:1px solid var(--bd);border-radius:12px;padding:16px;margin-bottom:16px;transition:background .3s,border .3s}
+.shdr{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+.shdr h2{font-size:16px;color:var(--tx2)}
+.vbadge{padding:5px 12px;background:var(--vbadge);color:var(--vbadge-t);border-radius:16px;font-size:14px;font-weight:600}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px}
+.stat{background:var(--bg);padding:12px;border-radius:8px;transition:background .3s}
+.stat .lbl{font-size:12px;color:var(--tx5);text-transform:uppercase;margin-bottom:3px}
+.stat .val{font-size:20px;font-weight:700;color:var(--tx2)}
+
+.tcard{background:var(--bg2);border:1px solid var(--bd);border-radius:12px;overflow:hidden;transition:background .3s,border .3s}
+.thdr{padding:14px 18px;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between}
+.thdr h3{font-size:14px;color:var(--tx4)}
+.btn-exp{padding:7px 14px;background:var(--exp-btn);color:var(--exp-btn-t);border:1px solid var(--exp-btn-b);border-radius:6px;font-size:13px;cursor:pointer;transition:background .15s}
+.btn-exp:hover{filter:brightness(1.2)}
+
+.twrap{overflow-x:auto;max-height:650px;overflow-y:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+thead{background:var(--bg);position:sticky;top:0;z-index:10;transition:background .3s}
+th{padding:10px 12px;text-align:left;font-weight:600;color:var(--tx5);border-bottom:1px solid var(--bd);white-space:nowrap}
+td{padding:9px 12px;border-bottom:1px solid var(--bd2);color:var(--tx3)}
+
+.tag{display:inline-block;padding:3px 8px;border-radius:4px;font-size:13px;font-weight:600}
+.tag-ln{background:var(--tag-ln);color:var(--tag-ln-t)}
+.tag-pl{background:var(--tag-pl);color:var(--tag-pl-t)}
+.tag-pd{background:var(--tag-pd);color:var(--tag-pd-t)}
+.tag-cg{background:var(--tag-cg);color:var(--tag-cg-t);font-size:14px}
+.tag-dt{background:var(--tag-dt);color:var(--tag-dt-t)}
+.tag-ts{background:var(--tag-ts);color:var(--tag-ts-t)}
+
+.pr{cursor:pointer;transition:background .15s}
+.pr:hover td{background:var(--hv)}
+.pr.exp td{background:var(--exp-bg);border-bottom:none}
+
+.pbd{display:none}
+.pbd.show{display:table-row}
+.pbd td{background:var(--bg4)!important;padding-left:36px;color:var(--tx4)}
+
+.pbc{display:inline-flex;align-items:center;gap:6px;min-width:110px}
+.pb{height:16px;border-radius:3px;background:var(--bar-bg)}
+.pbfill{height:100%;border-radius:3px;background:var(--bar-fill)}
+.pbt{font-size:13px;color:var(--bar-t);white-space:nowrap;min-width:40px;text-align:right}
+
+.ei{display:inline-block;transition:transform .2s;font-size:12px;color:var(--tx5);margin-right:5px;width:12px}
+.exp>.ei{transform:rotate(90deg)}
+
+.tr{font-weight:700;background:var(--bg3)!important}
+.tr td{border-top:2px solid var(--bd);color:var(--tx2)}
+.gs td{border-top:1px dashed var(--bd)}
+
+.es{text-align:center;padding:50px;color:var(--tx5)}
+.es .ic{font-size:42px;margin-bottom:12px}
+
+::-webkit-scrollbar{width:7px;height:7px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--sb);border-radius:4px}
+</style>
+</head>
+
+<body>
+<button class="theme-btn" onclick="toggleTheme()" id="themeBtn" title="切换主题">🌙</button>
+<div class="header">
+<h1><span class="logo">🚢</span> VVD Booking Query</h1>
+<div class="subtitle">输入航次代码查询 | 数据已内嵌聚合 · 无需服务器 · 即时响应 | 上次刷新 <span id="lr" style="color:var(--tx4);font-weight:600;">--</span> | 下次刷新 <span id="nr" style="color:var(--ac);font-weight:600;">--:--</span></div>
+<div class="subtitle" style="margin-top:4px;"><span style="color:var(--tag-cg-t);font-weight:600;">⚠ 注意：必须保证 Booking Route Detail 正确才能反映正常货量</span> <span style="color:var(--tx6);font-size:11px;">v869c6c5</span></div>
+</div>
+
+<div class="qsec">
+<div class="qcard">
+<div class="qrow">
+<div class="field"><label>Lane (航线)</label><div class="dd-wrap"><input type="text" id="li" class="lane-input" placeholder="例: REX, AM1" maxlength="10"><div class="dd-list" id="ld"></div></div><span class="hint">干线航线代码</span></div>
+<div class="field"><label>VVD (航次号)</label><div class="dd-wrap"><input type="text" id="vi" placeholder="例: RACE2616W" maxlength="20"><div class="dd-list" id="vd"></div></div><span class="hint">船名简称+航次+航向(E/W)</span></div>
+<button class="btn-q" onclick="dq()">🔍 查询</button><button class="btn-c" onclick="cq()">清除</button>
+</div>
+<div class="quick">
+<div class="quick-lbl">最近搜索:</div><div class="chips" id="qh"></div>
+</div>
+<div class="quick" style="border-top:none;padding-top:8px;margin-top:0;">
+<div class="quick-lbl">热门航次:</div><div class="chips" id="qc"></div>
+</div>
+</div>
+</div>
+
+<div class="rsec" id="rs" style="display:none;">
+<div class="scard">
+<div class="shdr"><h2>查询结果</h2>
+<div style="display:flex;align-items:center;gap:10px;">
+<span class="vbadge" id="rv">-</span>
+<a class="schedule-link-btn" id="scheduleLink" href="#" target="schedule_view" title="查看船期 Schedule">📅 Schedule</a>
+<div id="cocSocToggle" style="display:inline-flex;border:1px solid var(--bd);border-radius:6px;overflow:hidden;">
+<button id="btnAll" onclick="switchCocSoc('all')" style="padding:5px 12px;font-size:12px;font-weight:600;background:var(--ac);color:#fff;border:none;cursor:pointer;">全部</button>
+<button id="btnCoc" onclick="switchCocSoc('coc')" style="padding:5px 12px;font-size:12px;font-weight:600;background:transparent;color:var(--tx4);border:none;cursor:pointer;border-left:1px solid var(--bd);">COC</button>
+<button id="btnSoc" onclick="switchCocSoc('soc')" style="padding:5px 12px;font-size:12px;font-weight:600;background:transparent;color:var(--tx4);border:none;cursor:pointer;border-left:1px solid var(--bd);">SOC</button>
+</div>
+</div>
+</div>
+<div class="stats">
+<div class="stat"><div class="lbl">Trunk Lane</div><div class="val" id="stl">-</div></div>
+<div class="stat"><div class="lbl">总货量 TEU</div><div class="val" id="st">-</div></div>
+<div class="stat"><div class="lbl">总重量 (Ton)</div><div class="val" id="sgw">-</div></div>
+
+<div class="stat"><div class="lbl">提柜 OP</div><div class="val" id="sop">-</div></div>
+<div class="stat"><div class="lbl">Direct / T-S</div>
+<div class="val" id="sdts" style="font-size:12px;">
+<span style="color:#22c55e">-/-</span></div></div>
+</div>
+</div>
+<div id="mainToggle" style="display:flex;gap:0;margin-bottom:16px;border:1px solid var(--bd);border-radius:8px;overflow:hidden;width:fit-content;">
+<button id="btnPolMain" onclick="switchMainView('pol')" style="padding:7px 16px;font-size:13px;font-weight:600;background:var(--ac);color:#fff;border:none;cursor:pointer;">POL 汇总</button>
+<button id="btnPodDelMain" onclick="switchMainView('poddel')" style="padding:7px 16px;font-size:13px;font-weight:600;background:transparent;color:var(--tx4);border:none;cursor:pointer;border-left:1px solid var(--bd);">POD/DEL 汇总</button>
+</div>
+<div class="tcard" id="polCard">
+<div class="thdr"><h3>📋 POL 货量汇总（点击展开 POD）</h3> <button class="btn-exp" onclick="ex()">📥 导出 CSV</button></div>
+<div class="twrap">
+<table style="table-layout:fixed;" id="mainTbl"><colgroup><col style="width:3%"><col style="width:9%"><col style="width:9%"><col style="width:7%"><col style="width:7%"><col style="width:9%"><col style="width:9%"><col style="width:10%"><col style="width:9%"><col style="width:12%"></colgroup><thead><tr><th></th><th>POL</th><th>ETD</th><th>20'</th><th>40'</th><th>货量 TEU</th><th>提柜 OP</th><th>总重 Ton</th><th>均重 T/TEU</th><th id="thLane1">FIRST LANE</th></tr></thead>
+<tbody id="rb"></tbody>
+</table>
+</div>
+</div>
+<div class="tcard" id="podCard" style="display:none;">
+<div class="thdr"><h3 style="display:flex;align-items:center;gap:8px;">📋 POD/DEL 货量汇总
+<div id="viewToggle" style="display:inline-flex;border:1px solid var(--bd);border-radius:6px;overflow:hidden;">
+<button class="toggle-btn active" id="btnPod" onclick="switchView('pod')" style="padding:5px 12px;font-size:12px;background:var(--ac);color:#fff;border:none;cursor:pointer;">POD</button>
+<button class="toggle-btn" id="btnDel" onclick="switchView('del')" style="padding:5px 12px;font-size:12px;background:transparent;color:var(--tx4);border:none;cursor:pointer;border-left:1px solid var(--bd);">DEL</button>
+</div>
+</h3> <button class="btn-exp" onclick="ex()">📥 导出 CSV</button></div>
+<div class="twrap">
+<table style="table-layout:fixed;" id="podTbl"><colgroup><col style="width:3%"><col style="width:10%"><col style="width:7%"><col style="width:7%"><col style="width:10%"><col style="width:9%"><col style="width:9%"><col style="width:10%"><col style="width:9%"><col style="width:9%"></colgroup><thead><tr><th></th><th id="summaryLabel">POD</th><th>20'</th><th>40'</th><th>货量 TEU</th><th>提柜 OP</th><th>总重 Ton</th><th>均重 T/TEU</th><th>占比</th></tr></thead>
+<tbody id="pb"></tbody>
+</table>
+</div>
+</div>
+</div>
+
+<div class="rsec" id="es"><div class="es"><div class="ic">🔍</div><div>请输入 VVD 进行查询</div></div></div>
+
+<script>
+// ===== PRE-AGGREGATED EMBEDDED DATA =====
+<script src="db_data.js"></script>
+
+function _hideDD(el){ if(el) el.classList.remove('show'); }
+function _showDD(el){ if(el) el.classList.add('show'); }
+
+// Build VVD->Lane reverse map
+var _vvdLaneMap = {};
+(function(){
+    var lv = DB.laneVVDs || {};
+    for(var lane in lv){
+        lv[lane].forEach(function(item){ _vvdLaneMap[item.vvd] = lane; });
+    }
+})();
+
+function _onLaneInput(e){
+    var inp = e.target.value.trim().toUpperCase();
+    _hideDD(_vdEl);
+    document.getElementById('vi').value = '';
+    if(!inp){
+        _ldEl.innerHTML = _laneNames.slice(0,30).map(function(l){
+            var cnt = (DB.laneVVDs[l]||[]).length;
+            return '<div class="dd-item" onclick="_selLane(\''+l+'\')">'+l+' <span style="color:var(--tx6)">('+cnt+')</span></div>';
+        }).join('');
+        _showDD(_ldEl);
+        return;
+    }
+    var matches = _laneNames.filter(function(l){return l.indexOf(inp)!==-1;});
+    if(matches.length===0){ _hideDD(_ldEl); return; }
+    _ldEl.innerHTML = matches.slice(0,30).map(function(l){
+        var cnt = (DB.laneVVDs[l]||[]).length;
+        return '<div class="dd-item" onclick="_selLane(\''+l+'\')">'+l+' <span style="color:var(--tx6)">('+cnt+')</span></div>';
+    }).join('');
+    _showDD(_ldEl);
+}
+
+function _selLane(lane){
+    document.getElementById('li').value = lane;
+    _hideDD(_ldEl);
+    var vvds = DB.laneVVDs[lane] || [];
+    if(vvds.length === 0) return;
+    _vdEl.innerHTML = vvds.map(function(item){
+        return '<div class="dd-item" onclick="_selVVD(\''+item.vvd+'\',true)">'+item.vvd+' <span style="color:var(--tx6)">('+item.teu+' TEU)</span></div>';
+    }).join('');
+    _showDD(_vdEl);
+    _lockVVD = true;
+    setTimeout(function(){ _lockVVD = false; }, 100);
+}
+
+var _lockVVD = false;
+document.addEventListener('mousedown', function(e){
+    if(_lockVVD) return;
+    if(!e.target.closest('#li') && !e.target.closest('#ld')) _hideDD(_ldEl);
+    if(!e.target.closest('#vi') && !e.target.closest('#vd')) _hideDD(_vdEl);
+});
+
+function _onVVDInput(e){
+    var inp = e.target.value.trim().toUpperCase();
+    _hideDD(_ldEl);
+    var lane = document.getElementById('li').value.trim().toUpperCase();
+    var laneVVDS = (lane && DB.laneVVDs[lane]) ? DB.laneVVDs[lane] : null;
+    if(laneVVDS){
+        if(!inp){
+            _vdEl.innerHTML = laneVVDS.map(function(item){
+                return '<div class="dd-item" onclick="_selVVD(\''+item.vvd+'\',true)">'+item.vvd+' <span style="color:var(--tx6)">('+item.teu+' TEU)</span></div>';
+            }).join('');
+            _showDD(_vdEl);
+            return;
+        }
+        var matches = laneVVDS.filter(function(item){return item.vvd.indexOf(inp)!==-1;});
+        if(matches.length===0){ _hideDD(_vdEl); return; }
+        _vdEl.innerHTML = matches.slice(0,20).map(function(item){
+            return '<div class="dd-item" onclick="_selVVD(\''+item.vvd+'\',true)">'+item.vvd+' <span style="color:var(--tx6)">('+item.teu+' TEU)</span></div>';
+        }).join('');
+        _showDD(_vdEl);
+        return;
+    }
+    if(!inp){ _hideDD(_vdEl); return; }
+    if(DB.vvds[inp] && _vvdLaneMap[inp]){
+        document.getElementById('li').value = _vvdLaneMap[inp];
+        _hideDD(_vdEl);
+        return;
+    }
+    var matches = _vvdNames.filter(function(v){return v.indexOf(inp)!==-1;});
+    if(matches.length===0){ _hideDD(_vdEl); return; }
+    _vdEl.innerHTML = matches.slice(0,20).map(function(v){
+        var teu = DB.vvds[v].totalTeu;
+        return '<div class="dd-item" onclick="_selVVD(\''+v+'\',true)">'+v+' <span style="color:var(--tx6)">('+teu+' TEU)</span></div>';
+    }).join('');
+    _showDD(_vdEl);
+}
+
+function _selVVD(vvd, doQuery){
+    document.getElementById('vi').value = vvd;
+    _hideDD(_vdEl);
+    if(_vvdLaneMap[vvd]){
+        document.getElementById('li').value = _vvdLaneMap[vvd];
+    }
+    if(doQuery) dq();
+}
+
+// ===== END Lane / VVD autocomplete =====
+
+// Auto-refresh: check GitHub for newer version, reload if updated
+function checkUpdate() {
+    if (_updateChecked) return;
+    _updateChecked = true;
+    fetch('https://raw.githubusercontent.com/BOBWZW2/culines-reports/main/vvd_query.html', {method:'HEAD', cache:'no-store'})
+    .then(function(r){
+        var etag = r.headers.get('etag');
+        if(!etag && _pageETag) return;
+        if(!_pageETag) { _pageETag = etag; return; }
+        if(etag && etag !== _pageETag) { location.reload(); }
+    }).catch(function(){});
+}
+
+// ===== Theme Toggle =====
+function toggleTheme(){
+    var isLight=document.documentElement.classList.toggle('light');
+    document.getElementById('themeBtn').textContent=isLight?'☀️':'🌙';
+    localStorage.setItem('vvd-theme',isLight?'light':'dark');
+}
+(function(){
+    var saved=localStorage.getItem('vvd-theme');
+    if(saved==='light'){document.documentElement.classList.add('light');document.getElementById('themeBtn').textContent='☀️';}
+})();
+
+function _renderRecent(){
+    var h=JSON.parse(localStorage.getItem('vvd-recent')||'[]');
+    var el=document.getElementById('qh');
+    if(!h.length){el.innerHTML='<span style="color:var(--tx6);font-size:13px;">暂无记录</span>';return;}
+    el.innerHTML=h.map(function(v){
+        var info=DB.vvds[v];
+        var label=info?v+' ('+info.totalTeu+' TEU)':v;
+        return '<span class="chip" onclick="sv(\''+v+'\')">'+label+'</span>';
+    }).join('');
+}
+
+function init() {
+    const qc = document.getElementById('qc');
+    qc.innerHTML = DB.topVVDs.map(i => `<span class="chip" onclick="sv('${i.vvd}')">${i.vvd} (${i.teu} TEU)</span>`).join('');
+    _renderRecent();
+    document.getElementById('loadingOverlay')?.remove();
+    document.getElementById('nr').textContent = DB.nextRefresh || '--:--';
+    if(DB.generatedAt){
+        var d=new Date(DB.generatedAt);
+        var mm=String(d.getMonth()+1).padStart(2,'0');
+        var dd=String(d.getDate()).padStart(2,'0');
+        var hh=String(d.getHours()).padStart(2,'0');
+        var mi=String(d.getMinutes()).padStart(2,'0');
+        document.getElementById('lr').textContent=mm+'-'+dd+' '+hh+':'+mi;
+    }
+    _ldEl = document.getElementById('ld');
+    _vdEl = document.getElementById('vd');
+    document.getElementById('li').addEventListener('input', _onLaneInput);
+    document.getElementById('vi').addEventListener('input', _onVVDInput);
+    document.getElementById('li').addEventListener('focus', function(){ _onLaneInput({target:{value:document.getElementById('li').value}}); });
+    document.getElementById('vi').addEventListener('focus', function(){ _onVVDInput({target:{value:document.getElementById('vi').value}}); });
+}
+
+function sv(v){document.getElementById('vi').value=v;if(_vvdLaneMap[v])document.getElementById('li').value=_vvdLaneMap[v];dq();}
+
+function tp(idx){
+    var r=document.getElementById('i'+idx),d=document.getElementById('p'+idx);
+    if(!r||!d)return;
+    if(ep.has(idx)){ep.delete(idx);r.classList.remove('exp');d.classList.remove('show');}
+    else{ep.add(idx);r.classList.add('exp');d.classList.add('show');}
+}
+
+function tpod(pod){
+    var r=document.getElementById('z'+pod),d=document.getElementById('zd'+pod);
+    if(!r||!d)return;
+    if(epod.has(pod)){epod.delete(pod);r.classList.remove('exp');d.classList.remove('show');}
+    else{epod.add(pod);r.classList.add('exp');d.classList.add('show');}
+}
+
+function tpodDel(key){
+    var rId='dr_'+key, dId='dd_'+key;
+    var r=document.getElementById(rId),d=document.getElementById(dId);
+    if(!r||!d){console.log('[tpodDel] not found key:',key,'rId:',rId,'dId:',dId);return;}
+    console.log('[tpodDel] toggle:',key);
+    if(edel.has(key)){edel.delete(key);r.classList.remove('exp');d.classList.remove('show');}
+    else{edel.add(key);r.classList.add('exp');d.classList.add('show');}
+}
+
+function switchView(view){
+    _summaryView=view;
+    var bd=document.getElementById('btnDel'),bp=document.getElementById('btnPod');
+    var lbl=document.getElementById('summaryLabel');
+    if(view==='del'){
+        bd.style.background='var(--ac)';bd.style.color='#fff';
+        bp.style.background='transparent';bp.style.color='var(--tx4)';
+        lbl.textContent='DEL';
+    }else{
+        bp.style.background='var(--ac)';bp.style.color='#fff';
+        bd.style.background='transparent';bd.style.color='var(--tx4)';
+        lbl.textContent='POD';
+    }
+    renderSummary();
+}
+
+function switchMainView(view){
+    _mainView = view;
+    var btnPol = document.getElementById('btnPolMain');
+    var btnPodDel = document.getElementById('btnPodDelMain');
+    var polCard = document.getElementById('polCard');
+    var podCard = document.getElementById('podCard');
+    if(view === 'poddel'){
+        btnPodDel.style.background = 'var(--ac)'; btnPodDel.style.color = '#fff';
+        btnPol.style.background = 'transparent'; btnPol.style.color = 'var(--tx4)';
+        polCard.style.display = 'none';
+        podCard.style.display = 'block';
+    } else {
+        btnPol.style.background = 'var(--ac)'; btnPol.style.color = '#fff';
+        btnPodDel.style.background = 'transparent'; btnPodDel.style.color = 'var(--tx4)';
+        polCard.style.display = 'block';
+        podCard.style.display = 'none';
+    }
+}
+
+function switchCocSoc(filter){
+    _cocSocFilter = filter;
+    var btnAll = document.getElementById('btnAll');
+    var btnCoc = document.getElementById('btnCoc');
+    var btnSoc = document.getElementById('btnSoc');
+    btnAll.style.background = filter==='all' ? 'var(--ac)' : 'transparent';
+    btnAll.style.color = filter==='all' ? '#fff' : 'var(--tx4)';
+    btnCoc.style.background = filter==='coc' ? 'var(--ac)' : 'transparent';
+    btnCoc.style.color = filter==='coc' ? '#fff' : 'var(--tx4)';
+    btnSoc.style.background = filter==='soc' ? 'var(--ac)' : 'transparent';
+    btnSoc.style.color = filter==='soc' ? '#fff' : 'var(--tx4)';
+    if(curVVD) dq();
+}
+
+function renderSummary(){
+    var d=DB.vvds[curVVD];
+    if(!d)return;
+    var ptb=document.getElementById('pb');
+    epod.clear();edel.clear();
+    // Use filtered polSummary
+    var fd;
+    if(_cocSocFilter==='coc') fd=d.cocSummary||[];
+    else if(_cocSocFilter==='soc') fd=d.socSummary||[];
+    else fd=d.polSummary;
+    // Compute filtered total for percentage calculation
+    var fTotalTeu=0;
+    fd.forEach(function(p){p.podList.forEach(function(pd){fTotalTeu+=ct(pd);});});
+    var ph='';
+    if(_summaryView==='del'){
+        var delMap={};
+        fd.forEach(function(p){
+            p.podList.forEach(function(pd){
+                if(pd.delList){
+                    pd.delList.forEach(function(dd){
+                        if(!delMap[dd.del]) delMap[dd.del]={teu:0,ft20:0,ft40:0,grossTon:0,opTeu:0,eirTeu:0,pols:[]};
+                        delMap[dd.del].teu+=ct(dd);
+                        delMap[dd.del].ft20+=dd.ft20||0;
+                        delMap[dd.del].ft40+=dd.ft40||0;
+                        delMap[dd.del].grossTon+=dd.grossTon;
+                        delMap[dd.del].opTeu+=(dd.opTeu||0);
+                        delMap[dd.del].eirTeu+=(dd.eirTeu||0);
+                        var existing=delMap[dd.del].pols.find(function(x){return x.pol===p.pol&&x.isDirect===(p.isDirect!==false);});
+                        if(!existing){
+                            delMap[dd.del].pols.push({pol:p.pol,etd:p.etd,firstLane:p.firstLane,trunkLane:p.trunkLane,isDirect:p.isDirect!==false,teu:ct(dd),ft20:dd.ft20,ft40:dd.ft40,grossTon:dd.grossTon,opTeu:dd.opTeu||0,eirTeu:dd.eirTeu||0});
+                        }else{
+                            existing.teu+=ct(dd);existing.ft20+=dd.ft20;existing.ft40+=dd.ft40;
+                            existing.grossTon+=dd.grossTon;existing.opTeu+=(dd.opTeu||0);existing.eirTeu+=(dd.eirTeu||0);
+                        }
+                    });
+                }
+            });
+        });
+        var delList=Object.entries(delMap).map(function(e){return{del:e[0],teu:e[1].teu,ft20:e[1].ft20,ft40:e[1].ft40,grossTon:e[1].grossTon,opTeu:e[1].opTeu,eirTeu:e[1].eirTeu,pols:e[1].pols};}).sort(function(a,b){return b.teu-a.teu;});
+        delList.forEach(function(dd,i){
+            var pct=(fTotalTeu>0?(dd.teu/fTotalTeu*100):0).toFixed(1);
+            var avgW=dd.teu>0?(dd.grossTon/dd.teu).toFixed(1):'-';
+            var bw=Math.max(Math.round(parseFloat(pct)),3);
+            ph+='<tr class="pr" id="z'+esc(dd.del)+'" onclick="tpod(\''+esc(dd.del)+'\')">';
+            ph+='<td><span class="ei">&#9654;</span></td>';
+            ph+='<td><span class="tag tag-pd">'+esc(dd.del)+'</span></td>';
+            ph+='<td>'+(dd.ft20||0)+'</td>';
+            ph+='<td>'+(dd.ft40||0)+'</td>';
+            ph+='<td><span class="tag tag-cg">'+dd.teu+'</span></td>';
+            ph+='<td></td>';
+            ph+='<td>'+(dd.opTeu>0?dd.opTeu:'-')+'</td>';
+            ph+='<td>'+fmt(dd.grossTon)+'</td>';
+            ph+='<td>'+avgW+'</td>';
+            ph+='<td><span style="display:inline-flex;align-items:center;gap:4px;"><span class="pb" style="width:'+bw+'px;height:14px;"><span class="pbfill"></span></span><span class="pbt">'+pct+'%</span></span></td>';
+            ph+='</tr>';
+            if(dd.pols.length>0){
+                dd.pols.sort(function(a,b){return b.teu-a.teu;});
+                var colSpan=9;
+                ph+='<tr class="pbd" id="zd'+esc(dd.del)+'"><td colspan="'+colSpan+'" style="padding:0;"><table style="width:100%;margin:0;border-collapse:collapse;table-layout:fixed;">';
+                ph+='<colgroup><col style="width:3%"><col style="width:10%"><col style="width:7%"><col style="width:7%"><col style="width:10%"><col style="width:9%"><col style="width:9%"><col style="width:10%"><col style="width:9%"><col style="width:9%"></colgroup>';
+                dd.pols.forEach(function(pp){
+                    var isD=pp.firstLane===pp.trunkLane;
+                    var tagCls=isD?'tag-pl':'tag-ts';
+                    var ppct=Math.round(pp.teu/Math.max(dd.teu,1)*1000)/10;
+                    var ppbw=Math.max(Math.round(ppct),3);
+                    ph+='<tr style="background:#0c1322;">';
+                    ph+='<td></td>';
+                    ph+='<td style="padding:5px 12px;"><span class="tag '+tagCls+'" style="font-size:10.5px;">'+esc(pp.pol)+'</span></td>';
+                    ph+='<td style="padding:5px 12px;">'+(pp.ft20||0)+'</td>';
+                    ph+='<td style="padding:5px 12px;">'+(pp.ft40||0)+'</td>';
+                    ph+='<td style="padding:5px 12px;"><span class="tag tag-cg" style="font-size:11px;">'+pp.teu+'</span></td>';
+                    ph+='<td style="padding:5px 12px;"></td>';
+                    ph+='<td style="padding:5px 12px;">'+(pp.opTeu>0?pp.opTeu:'-')+'</td>';
+                    ph+='<td style="padding:5px 12px;">'+fmt(pp.grossTon)+'</td>';
+                    ph+='<td style="padding:5px 12px;">'+(pp.teu>0?(pp.grossTon/pp.teu).toFixed(1):'-')+'</td>';
+                    ph+='<td style="padding:5px 12px;">';
+                    ph+='<span style="display:inline-flex;align-items:center;gap:4px;"><span class="pb" style="width:'+ppbw+'px;height:14px;"><span class="pbfill"></span></span><span class="pbt">'+ppct+'%</span></span>';
+                    ph+='</td></tr>';
+                });
+                ph+='</table></td></tr>';
+            }
+        });
+    }else{
+        var podMap={};
+        fd.forEach(function(p){
+            p.podList.forEach(function(pd){
+                if(!podMap[pd.pod]) podMap[pd.pod]={teu:0,ft20:0,ft40:0,grossTon:0,opTeu:0,eirTeu:0,pols:[]};
+                podMap[pd.pod].teu+=ct(pd);
+                podMap[pd.pod].ft20+=pd.ft20||0;
+                podMap[pd.pod].ft40+=pd.ft40||0;
+                podMap[pd.pod].grossTon+=pd.grossTon;
+                podMap[pd.pod].opTeu+=(pd.opTeu||0);
+                podMap[pd.pod].eirTeu+=(pd.eirTeu||0);
+                var existing=podMap[pd.pod].pols.find(function(x){return x.pol===p.pol&&x.isDirect===(p.isDirect!==false);});
+                if(!existing){
+                    podMap[pd.pod].pols.push({pol:p.pol,etd:p.etd,firstLane:p.firstLane,trunkLane:p.trunkLane,isDirect:p.isDirect!==false,teu:ct(pd),ft20:pd.ft20,ft40:pd.ft40,grossTon:pd.grossTon,opTeu:pd.opTeu||0,eirTeu:pd.eirTeu||0});
+                }else{
+                    existing.teu+=ct(pd);existing.ft20+=pd.ft20;existing.ft40+=pd.ft40;
+                    existing.grossTon+=pd.grossTon;existing.opTeu+=(pd.opTeu||0);existing.eirTeu+=(pd.eirTeu||0);
+                }
+            });
+        });
+        var podList=Object.entries(podMap).map(function(e){return{pod:e[0],teu:e[1].teu,ft20:e[1].ft20,ft40:e[1].ft40,grossTon:e[1].grossTon,opTeu:e[1].opTeu,eirTeu:e[1].eirTeu,pols:e[1].pols};}).sort(function(a,b){return b.teu-a.teu;});
+        podList.forEach(function(pd,i){
+            var pct=(fTotalTeu>0?(pd.teu/fTotalTeu*100):0).toFixed(1);
+            var avgW=pd.teu>0?(pd.grossTon/pd.teu).toFixed(1):'-';
+            var bw=Math.max(Math.round(parseFloat(pct)),3);
+            ph+='<tr class="pr" id="z'+esc(pd.pod)+'" onclick="tpod(\''+esc(pd.pod)+'\')">';
+            ph+='<td><span class="ei">&#9654;</span></td>';
+            ph+='<td><span class="tag tag-pd">'+esc(pd.pod)+'</span></td>';
+            ph+='<td>'+(pd.ft20||0)+'</td>';
+            ph+='<td>'+(pd.ft40||0)+'</td>';
+            ph+='<td><span class="tag tag-cg">'+pd.teu+'</span></td>';
+            ph+='<td></td>';
+            ph+='<td>'+(pd.opTeu>0?pd.opTeu:'-')+'</td>';
+            ph+='<td>'+fmt(pd.grossTon)+'</td>';
+            ph+='<td>'+avgW+'</td>';
+            ph+='<td><span style="display:inline-flex;align-items:center;gap:4px;"><span class="pb" style="width:'+bw+'px;height:14px;"><span class="pbfill"></span></span><span class="pbt">'+pct+'%</span></span></td>';
+            ph+='</tr>';
+            if(pd.pols.length>0){
+                pd.pols.sort(function(a,b){return b.teu-a.teu;});
+                var colSpan=9;
+                ph+='<tr class="pbd" id="zd'+esc(pd.pod)+'"><td colspan="'+colSpan+'" style="padding:0;"><table style="width:100%;margin:0;border-collapse:collapse;table-layout:fixed;">';
+                ph+='<colgroup><col style="width:3%"><col style="width:10%"><col style="width:7%"><col style="width:7%"><col style="width:10%"><col style="width:9%"><col style="width:9%"><col style="width:10%"><col style="width:9%"><col style="width:9%"></colgroup>';
+                pd.pols.forEach(function(pp){
+                    var isD=pp.isDirect!==false;
+                    var tagCls=isD?'tag-pl':'tag-ts';
+                    var ppct=Math.round(pp.teu/Math.max(pd.teu,1)*1000)/10;
+                    var ppbw=Math.max(Math.round(ppct),3);
+                    ph+='<tr style="background:#0c1322;">';
+                    ph+='<td></td>';
+                    ph+='<td style="padding:5px 12px;"><span class="tag '+tagCls+'" style="font-size:10.5px;">'+esc(pp.pol)+'</span></td>';
+                    ph+='<td style="padding:5px 12px;">'+(pp.ft20||0)+'</td>';
+                    ph+='<td style="padding:5px 12px;">'+(pp.ft40||0)+'</td>';
+                    ph+='<td style="padding:5px 12px;"><span class="tag tag-cg" style="font-size:11px;">'+pp.teu+'</span></td>';
+                    ph+='<td style="padding:5px 12px;"></td>';
+                    ph+='<td style="padding:5px 12px;">'+(pp.opTeu>0?pp.opTeu:'-')+'</td>';
+                    ph+='<td style="padding:5px 12px;">'+fmt(pp.grossTon)+'</td>';
+                    ph+='<td style="padding:5px 12px;">'+(pp.teu>0?(pp.grossTon/pp.teu).toFixed(1):'-')+'</td>';
+                    ph+='<td style="padding:5px 12px;">';
+                    ph+='<span style="display:inline-flex;align-items:center;gap:4px;"><span class="pb" style="width:'+ppbw+'px;height:14px;"><span class="pbfill"></span></span><span class="pbt">'+ppct+'%</span></span>';
+                    ph+='</td></tr>';
+                });
+                ph+='</table></td></tr>';
+            }
+        });
+    }
+    ptb.innerHTML=ph;
+}
+
+// TEU 重算：用箱数计算保证 20'+40'×2 = TEU 自洽
+function ct(o){return(o.ft20||0)+(o.ft40||0)*2;}
+// POL 层用 total20ft/total40ft 字段
+function ctP(p){return(p.total20ft||0)+(p.total40ft||0)*2;}
+
+function dq(){
+    _hideDD(_ldEl);_hideDD(_vdEl);
+    checkUpdate();
+    var inp=document.getElementById('vi').value.trim().toUpperCase();
+    if(!inp){alert('请输入 VVD');return;}
+    var d=DB.vvds[inp];
+    if(!d){
+        var keys=Object.keys(DB.vvds).filter(function(k){return k.indexOf(inp)!==-1;});
+        if(keys.length===1){d=DB.vvds[keys[0]];inp=keys[0];}
+        else if(keys.length>1){
+            alert('匹配多个 VVD: '+keys.slice(0,5).join(', ')+' ...');
+            return;
+        }
+        else{alert('未找到匹配的 VVD');return;}
+    }
+    curVVD=inp;
+    ep.clear();
+    epod.clear();
+    edel.clear();
+    _delIdx=0;
+    (function(){
+        var h=JSON.parse(localStorage.getItem('vvd-recent')||'[]');
+        h=h.filter(function(v){return v!==inp;});
+        h.unshift(inp);
+        if(h.length>8)h=h.slice(0,8);
+        localStorage.setItem('vvd-recent',JSON.stringify(h));
+        _renderRecent();
+    })();
+    document.getElementById('rs').style.display='block';
+    switchMainView('pol');
+    document.getElementById('es').style.display='none';
+    document.getElementById('rv').textContent=inp;
+    // Cross-link: 提取 VVD 的 code+num 部分（去掉末位 bound W/E/S/N）→ Schedule 显示完整 rotation
+    var schedCode = inp.replace(/[WENS]$/, '');
+    document.getElementById('scheduleLink').href = '__SCHEDULE_URL__#code='+encodeURIComponent(schedCode);
+    var tl=d.polSummary.length>0?d.polSummary[0].trunkLane:'-';
+    document.getElementById('stl').innerHTML='<span class="tag tag-ln">'+esc(tl)+'</span>';
+
+    // Use filtered polSummary based on COC/SOC toggle
+    var fd;
+    if(_cocSocFilter==='coc') fd=d.cocSummary||[];
+    else if(_cocSocFilter==='soc') fd=d.socSummary||[];
+    else fd=d.polSummary;
+
+    // Compute filtered totals for stats display
+    var fTotalTeu=0,fDirectTeu=0,fTsTeu=0,fTotal20ft=0,fTotal40ft=0,fTotalGrossTon=0,fTotalOp=0,fTotalEir=0;
+    fd.forEach(function(p){fTotalTeu+=ctP(p);fDirectTeu+=p.directTeu||0;fTsTeu+=p.tsTeu||0;fTotalGrossTon+=p.totalGrossTon;fTotal20ft+=p.total20ft;fTotal40ft+=p.total40ft;fTotalOp+=p.opTeu||0;fTotalEir+=p.eirTeu||0;});
+    document.getElementById('st').textContent=fTotalTeu;
+    document.getElementById('sgw').textContent=fmt(fTotalGrossTon);
+    document.getElementById('sop').textContent=fTotalOp>0?fTotalOp:'-';
+    document.getElementById('seir').textContent=fTotalEir>0?fTotalEir:'-';
+    document.getElementById('sdts').innerHTML='<span style="color:#22c55e">'+fDirectTeu+'</span> / <span style="color:#f59e0b">'+fTsTeu+'</span>';
+
+    var mt=0;
+    fd.forEach(function(p){p.podList.forEach(function(pd){if(pd.teu>mt)mt=pd.teu;});});
+
+    var di=[],ts=[];
+    fd.forEach(function(p,idx){p._i=idx;if(p.isDirect!==false)di.push(p);else ts.push(p);});
+    // Direct: ETD 从早到晚
+    di.sort(function(a,b){
+        var ea=a.etd||'',eb=b.etd||'';
+        return ea<eb?-1:ea>eb?1:0;
+    });
+    // T/S: 货量从大到小
+    ts.sort(function(a,b){
+        return ctP(b)-ctP(a);
+    });
+
+    function rg(lbl,items){
+        if(!items.length)return'';
+        var isDirect=(lbl==='Direct');
+        var tc=isDirect?'rgba(34,197,94,.2)':'rgba(168,85,247,.2)';
+        var fc=isDirect?'#86efac':'#d8b4fe';
+        var gt=0,gw=0,g20=0,g40=0,gop=0;
+        items.forEach(function(p){gt+=ctP(p);gw+=p.totalGrossTon;g20+=p.total20ft;g40+=p.total40ft;gop+=p.opTeu||0;});
+        var h='<tr class="gs" style="'+bg(tc,'.08')+';">';
+        h+='<td></td><td colspan="2" style="padding:8px 12px;color:'+fc+';font-weight:600;font-size:11.5px;">';
+        h+='<span class="tag" style="background:'+tc+';color:'+fc+';">'+lbl+'</span> 小计 ('+items.length+' POL)</td>';
+        h+='<td>'+g20+'</td><td>'+g40+'</td>';
+        h+='<td><span class="tag tag-cg">'+gt+'</span></td>';
+        h+='<td>'+''+'</td><td>'+(gop>0?gop:'-')+'</td>';
+        h+='<td>'+fmt(gw)+'</td><td>'+(gt>0?(gw/gt).toFixed(1):'-')+'</td><td></td></tr>';
+        var polTagClass=isDirect?'tag-pl':'tag-ts';
+        items.forEach(function(p){
+            var idx=p._i;
+            h+='<tr class="pr" id="i'+idx+'" onclick="tp('+idx+')">';
+            h+='<td><span class="ei">&#9654;</span></td>';
+            h+='<td><span class="tag '+polTagClass+'">'+esc(p.pol)+'</span></td>';
+            h+='<td>'+(p.etd||'-')+'</td>';
+            h+='<td>'+(p.total20ft||0)+'</td>';
+            h+='<td>'+(p.total40ft||0)+'</td>';
+            h+='<td><span class="tag tag-cg">'+ctP(p)+'</span></td>';
+            h+='<td></td>';
+            h+='<td>'+(p.opTeu>0?p.opTeu:'-')+'</td>';
+            h+='<td>'+fmt(p.totalGrossTon)+'</td>';
+            h+='<td>'+(ctP(p)>0?(p.totalGrossTon/ctP(p)).toFixed(1):'-')+'</td>';
+            h+='<td><span class="tag tag-ln">'+esc(p.firstLane)+'</span></td>';
+            h+='</tr>';
+            if(p.podList.length){
+                var pc=10;
+                h+='<tr class="pbd" id="p'+idx+'"><td colspan="'+pc+'" style="padding:0;"><table style="width:100%;margin:0;border-collapse:collapse;table-layout:fixed;">';
+                h+='<colgroup><col style="width:3%"><col style="width:9%"><col style="width:9%"><col style="width:7%"><col style="width:7%"><col style="width:9%"><col style="width:9%"><col style="width:10%"><col style="width:9%"><col style="width:12%"></colgroup>';
+                p.podList.forEach(function(pd){
+                    var pct=Math.round(ct(pd)/Math.max(ctP(p),1)*1000)/10;
+                    var bw=Math.max(Math.round(pct),3);
+                    var avgW=ct(pd)>0?(pd.grossTon/ct(pd)).toFixed(1):'-';
+                    var podKey=p.pol+'_'+pd.pod;
+                    var hasDel=pd.delList&&pd.delList.length>0;
+                    var showExpand=hasDel&&(pd.delList.length>1||pd.delList[0].del!==pd.pod);
+                    var delIdx=_delIdx++;
+                    h+='<tr'+(showExpand?' class="pr" id="dr_'+delIdx+'" onclick="tpodDel('+delIdx+')"':'')+' style="background:#0c1322;">';
+                    h+='<td>'+(showExpand?'<span class="ei">&#9654;</span>':'')+'</td>';
+                    h+='<td style="padding:5px 12px;"><span class="tag tag-pd" style="font-size:10.5px;">'+esc(pd.pod)+'</span></td>';
+                    h+='<td style="padding:5px 12px;"></td>';
+                    h+='<td style="padding:5px 12px;">'+(pd.ft20||0)+'</td>';
+                    h+='<td style="padding:5px 12px;">'+(pd.ft40||0)+'</td>';
+                    h+='<td style="padding:5px 12px;"><span class="tag tag-cg" style="font-size:11px;">'+ct(pd)+'</span></td>';
+                    h+='<td style="padding:5px 12px;"></td>';
+                    h+='<td style="padding:5px 12px;">'+(pd.opTeu>0?pd.opTeu:'-')+'</td>';
+                    h+='<td style="padding:5px 12px;">'+fmt(pd.grossTon)+'</td>';
+                    h+='<td style="padding:5px 12px;">'+avgW+'</td>';
+                    h+='<td style="padding:5px 12px;">';
+                    h+='<span style="display:inline-flex;align-items:center;gap:4px;"><span class="pb" style="width:'+bw+'px;height:14px;"><span class="pbfill"></span></span><span class="pbt">'+pct+'%</span></span>';
+                    h+='</td></tr>';
+                    if(showExpand){
+                        var delColSpan=11;
+                        h+='<tr class="pbd" id="dd_'+delIdx+'"><td colspan="'+delColSpan+'" style="padding:0;"><table style="width:100%;margin:0;border-collapse:collapse;table-layout:fixed;">';
+                        h+='<colgroup><col style="width:3%"><col style="width:9%"><col style="width:9%"><col style="width:7%"><col style="width:7%"><col style="width:9%"><col style="width:9%"><col style="width:10%"><col style="width:9%"><col style="width:12%"></colgroup>';
+                        pd.delList.forEach(function(dd){
+                            var dAvgW=ct(dd)>0?(dd.grossTon/ct(dd)).toFixed(1):'-';
+                            h+='<tr style="background:#0c1322;">';
+                            h+='<td></td>';
+                            h+='<td style="padding:4px 12px 4px 24px;"><span class="tag tag-dt" style="font-size:10px;">'+esc(dd.del)+'</span></td>';
+                            h+='<td style="padding:4px 12px;"></td>';
+                            h+='<td style="padding:4px 12px;">'+(dd.ft20||0)+'</td>';
+                            h+='<td style="padding:4px 12px;">'+(dd.ft40||0)+'</td>';
+                            h+='<td style="padding:4px 12px;"><span class="tag tag-cg" style="font-size:10px;">'+ct(dd)+'</span></td>';
+                            h+='<td style="padding:4px 12px;"></td>';
+                            h+='<td style="padding:4px 12px;">'+(dd.opTeu>0?dd.opTeu:'-')+'</td>';
+                            h+='<td style="padding:4px 12px;">'+fmt(dd.grossTon)+'</td>';
+                            h+='<td style="padding:4px 12px;">'+dAvgW+'</td>';
+                            h+='<td style="padding:4px 12px;color:var(--tx6);font-size:12px;">-</td>';
+                            h+='</tr>';
+                        });
+                        h+='</table></td></tr>';
+                    }
+                });
+                h+='</table></td></tr>';
+            }
+        });
+        return h;
+    }
+
+    var tb=document.getElementById('rb');
+    tb.innerHTML=rg('Direct',di)+rg('T/S',ts)+
+        '<tr class="tr"><td></td><td style="text-align:right;padding-right:12px;color:var(--tx4);font-weight:400;">合计</td>'+
+        '<td></td>'+
+        '<td>'+(fTotal20ft||0)+'</td><td>'+(fTotal40ft||0)+'</td>'+
+        '<td><span class="tag tag-cg">'+fTotalTeu+'</span></td><td>'+(fTotalEir>0?fTotalEir:'-')+'</td><td>'+(fTotalOp>0?fTotalOp:'-')+'</td><td>'+fmt(fTotalGrossTon)+'</td><td>'+(fTotalTeu>0?(fTotalGrossTon/fTotalTeu).toFixed(1):'-')+'</td><td></td></tr>';
+
+    renderSummary();
+}
+
+function bg(op,a){
+    return 'background:'+op.replace(')',a)+')';
+}
+
+function esc(s){
+    return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function fmt(n){
+    return Number(n||0).toFixed(1).replace(/\B(?=(\d{3})+(?!\d))/g,',');
+}
+
+function cq(){
+    document.getElementById('vi').value='';
+    document.getElementById('li').value='';
+    _hideDD(_ldEl);_hideDD(_vdEl);
+    document.getElementById('rs').style.display='none';
+    document.getElementById('es').style.display='block';
+    _mainView = 'pol';
+    ep.clear();epod.clear();edel.clear();curVVD='';
+}
+
+function ex(){
+    if(!curVVD)return;
+    var d=DB.vvds[curVVD];
+    if(!d)return;
+    // B/L detail: [BL, POR, POL, POD, DEL, L1, L2, COC/SOC, TEU, 20ft, 40ft, grossTon, isDirect(1=Direct,0=T/S)]
+    var bl=d.bl||[];
+    var filterLabel=_cocSocFilter==='all'?'ALL':_cocSocFilter.toUpperCase();
+    var filterKey=_cocSocFilter==='all'?'':_cocSocFilter.toUpperCase();
+    var csv='\uFEFFBL No.,POR,POL,FIRST LANE,TRUNK LANE,POD,DEL,Direct/T-S,COC/SOC,20ft,40ft,TEU,总重(Ton),均重(T/TEU)\n';
+    bl.forEach(function(r){
+        if(filterKey && r[7]!==filterKey)return;
+        var teu=r[8],f20=r[9],f40=r[10],gw=r[11];
+        var avgW=teu>0?(gw/teu).toFixed(1):'-';
+        csv+='"'+r[0]+'","'+r[1]+'","'+r[2]+'","'+r[5]+'","'+r[6]+'","'+r[3]+'","'+r[4]+'","'+(r[12]==1?'Direct':'T/S')+'","'+r[7]+'",'+f20+','+f40+','+teu+','+gw.toFixed(1)+','+avgW+'\n';
+    });
+    var blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+    var a=document.createElement('a');a.href=URL.createObjectURL(blob);
+    a.download='VVD_'+curVVD+'_'+filterLabel+'_BL_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
+}
+
+document.getElementById('vi').addEventListener('keydown',function(e){if(e.key==='Enter')dq();});
+
+// Init immediately - no loading overlay needed since data is tiny
+init();
+
+// Cross-link: URL hash #vvd=XXX → auto query (on load + on hash change)
+function _hashAutoQuery(){
+    var h = location.hash.replace('#','');
+    if(!h) return;
+    var params = {};
+    h.split('&').forEach(function(pair){
+        var kv = pair.split('=');
+        if(kv.length===2) params[decodeURIComponent(kv[0])] = decodeURIComponent(kv[1]);
+    });
+    if(params.vvd){
+        document.getElementById('vi').value = params.vvd;
+        if(_vvdLaneMap[params.vvd]){
+            document.getElementById('li').value = _vvdLaneMap[params.vvd];
+        }
+        dq();
+    }
+}
+_hashAutoQuery();
+window.addEventListener('hashchange', _hashAutoQuery);
+
+// PostMessage: 向 Schedule 窗口发送 code 搜索请求
+var _scheduleWin = null;
+function _openSchedule(code){
+    var url = '__SCHEDULE_URL__#code=' + encodeURIComponent(code);
+    if(_scheduleWin && !_scheduleWin.closed){
+        _scheduleWin.location.href = url;
+        _scheduleWin.focus();
+    } else {
+        _scheduleWin = window.open(url, 'schedule_view');
+    }
+    setTimeout(function(){
+        if(_scheduleWin && !_scheduleWin.closed){
+            _scheduleWin.postMessage({type:'queryCode', code:code}, '*');
+        }
+    }, 800);
+}
+
+// 监听来自 Schedule 的消息 (VVD 查询请求)
+window.addEventListener('message', function(e){
+    if(e.data && e.data.type === 'queryVVD'){
+        document.getElementById('vi').value = e.data.vvd;
+        if(_vvdLaneMap[e.data.vvd]){
+            document.getElementById('li').value = _vvdLaneMap[e.data.vvd];
+        }
+        dq();
+        window.focus();
+    }
+});
+</script>
+</body>
+</html>
