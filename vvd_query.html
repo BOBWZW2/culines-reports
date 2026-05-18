@@ -218,9 +218,23 @@ td{padding:9px 12px;border-bottom:1px solid var(--bd2);color:var(--tx3)}
 <div class="rsec" id="es"><div class="es"><div class="ic">🔍</div><div>请输入 VVD 进行查询</div></div></div>
 
 <script>
-// ===== PRE-AGGREGATED EMBEDDED DATA =====
+// ===== GLOBAL STATE =====
+var curVVD = '';
+var ep = new Set();
+var epod = new Set();
+var edel = new Set();
+var _delIdx = 0;
+var _pageETag = null;
+var _updateChecked = false;
+var _mainView = 'pol';
+var _summaryView = 'pod';
+var _cocSocFilter = 'all';
+var _laneNames = [];
+var _vvdNames = [];
+var _ldEl, _vdEl;
 </script>
 <script src="db_data.js"></script>
+<script>_laneNames=Object.keys(DB.laneVVDs||{}).sort();_vvdNames=Object.keys(DB.vvds||{});</script>
 <script>
 
 function _hideDD(el){ if(el) el.classList.remove('show'); }
